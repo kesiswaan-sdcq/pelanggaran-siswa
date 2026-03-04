@@ -36,21 +36,6 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* ========== CONFIG BANNER ========== */
-#config-banner {
-  background: #7c3aed;
-  color: white;
-  padding: 12px 20px;
-  font-size: 13px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  justify-content: center;
-}
-#config-banner a { color: #ddd6fe; text-decoration: underline; cursor: pointer; }
-#config-banner.hidden { display: none; }
-
 /* ========== LOGIN ========== */
 #login-screen {
   min-height: 100vh;
@@ -86,7 +71,7 @@ body {
 
 .field { margin-bottom: 16px; }
 .field label { display: block; font-size: 12px; font-weight: 600; color: var(--slate); margin-bottom: 6px; letter-spacing: 0.03em; text-transform: uppercase; }
-.field input, .field select {
+.field input {
   width: 100%; padding: 11px 14px;
   border: 1.5px solid var(--border);
   border-radius: 10px;
@@ -94,7 +79,7 @@ body {
   outline: none; transition: border-color 0.2s, box-shadow 0.2s;
   background: white;
 }
-.field input:focus, .field select:focus {
+.field input:focus {
   border-color: var(--hijau-mid);
   box-shadow: 0 0 0 3px rgba(30,138,80,0.12);
 }
@@ -105,7 +90,8 @@ body {
   font-family: inherit; font-size: 15px; font-weight: 700;
   cursor: pointer; transition: all 0.2s; margin-top: 8px;
 }
-.btn-login:hover { background: var(--hijau-mid); transform: translateY(-1px); }
+.btn-login:hover:not(:disabled) { background: var(--hijau-mid); transform: translateY(-1px); }
+.btn-login:disabled { background: var(--slate); cursor: not-allowed; }
 .login-err { background: var(--merah-pale); color: var(--merah); border: 1px solid #fca5a5; border-radius: 8px; padding: 10px 14px; font-size: 13px; font-weight: 600; margin-top: 12px; display: none; }
 
 /* ========== APP SHELL ========== */
@@ -258,7 +244,7 @@ select.inp:focus, textarea.inp:focus, input.inp:focus {
   cursor: pointer; transition: all 0.2s;
   display: flex; align-items: center; justify-content: center; gap: 8px;
 }
-.btn-primary:hover { background: var(--hijau-mid); transform: translateY(-1px); }
+.btn-primary:hover:not(:disabled) { background: var(--hijau-mid); transform: translateY(-1px); }
 .btn-primary:disabled { background: var(--slate); cursor: not-allowed; transform: none; }
 
 .toast {
@@ -375,10 +361,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 .user-ava { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; color: white; }
 .user-info .un { font-weight: 700; font-size: 14px; }
 .user-info .ur { font-size: 11px; color: var(--slate); margin-top: 1px; }
-.role-pill {
-  padding: 3px 10px; border-radius: 20px;
-  font-size: 11px; font-weight: 700;
-}
+.role-pill { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
 .role-walas { background: var(--hijau-pale); color: var(--hijau); }
 .role-kesiswaan { background: #eff6ff; color: #1d4ed8; }
 .role-pimpinan { background: #fdf4ff; color: #7e22ce; }
@@ -389,7 +372,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 
 /* loading overlay */
 #loading {
-  position: fixed; inset: 0; background: rgba(255,255,255,0.85);
+  position: fixed; inset: 0; background: rgba(255,255,255,0.92);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   z-index: 9999; gap: 16px;
 }
@@ -397,7 +380,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 #loading p { font-size: 14px; color: var(--slate); font-weight: 600; }
 
 @media print {
-  header, .nav-tabs, #config-banner, .lap-toolbar, .filter-bar, .btn-del, .btn-logout { display: none !important; }
+  header, .nav-tabs, .lap-toolbar, .filter-bar, .btn-del, .btn-logout { display: none !important; }
   body { background: white; }
   .card { box-shadow: none; border: 1px solid #ddd; }
 }
@@ -405,27 +388,22 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 </head>
 <body>
 
-<!-- CONFIG BANNER -->
-<div id="config-banner">
-  ⚙️ Aplikasi belum dikonfigurasi. <a onclick="showConfig()">Klik di sini untuk setup Google Sheets API</a>
-</div>
-
 <!-- LOADING -->
-<div id="loading" style="display:none">
+<div id="loading">
   <div class="big-spin"></div>
-  <p id="loading-text">Memuat data...</p>
+  <p id="loading-text">Memuat data dari Google Sheets...</p>
 </div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
 <!-- LOGIN -->
-<div id="login-screen">
+<div id="login-screen" style="display:none">
   <div class="login-box">
     <div class="login-logo">
       <div class="icon">📋</div>
       <h1>Sistem Poin Pelanggaran</h1>
-      <p>Unit SD · Masuk untuk melanjutkan</p>
+      <p>SDIT CQ · Masuk untuk melanjutkan</p>
     </div>
     <div class="field">
       <label>Username</label>
@@ -472,7 +450,8 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           <div class="fg">
             <label>Nama Siswa</label>
             <div class="search-wrap">
-              <input class="search-input" id="inp-siswa" placeholder="Ketik nama siswa..." autocomplete="off" oninput="onSiswaInput()" onfocus="onSiswaFocus()" onblur="onSiswaBlur()" onkeydown="onSiswaKeydown(event)">
+              <input class="search-input" id="inp-siswa" placeholder="Ketik nama siswa..." autocomplete="off"
+                oninput="onSiswaInput()" onfocus="onSiswaFocus()" onblur="onSiswaBlur()" onkeydown="onSiswaKeydown(event)">
               <div class="dropdown-list" id="siswa-dd"></div>
             </div>
           </div>
@@ -481,7 +460,8 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
             <div class="fg">
               <label>Jenis Pelanggaran (Pasal 40)</label>
               <div class="search-wrap">
-                <input class="search-input" id="inp-peln-search" placeholder="Ketik jenis pelanggaran..." autocomplete="off" oninput="onPelnInput()" onfocus="onPelnFocus()" onblur="onPelnBlur()" onkeydown="onPelnKeydown(event)">
+                <input class="search-input" id="inp-peln-search" placeholder="Ketik jenis pelanggaran..." autocomplete="off"
+                  oninput="onPelnInput()" onfocus="onPelnFocus()" onblur="onPelnBlur()" onkeydown="onPelnKeydown(event)">
                 <div class="dropdown-list" id="peln-dd"></div>
               </div>
             </div>
@@ -512,7 +492,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       </div>
     </div>
 
-    <!-- TAB: REKAP KELAS -->
+    <!-- TAB: REKAP -->
     <div class="tab-pane" id="tab-rekap">
       <div class="stats-grid" id="stats-rekap"></div>
       <div class="card">
@@ -549,7 +529,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       </div>
     </div>
 
-    <!-- TAB: LAPORAN (pimpinan + kesiswaan) -->
+    <!-- TAB: LAPORAN -->
     <div class="tab-pane" id="tab-laporan">
       <div class="card">
         <div class="card-head">📄 Laporan untuk Pimpinan</div>
@@ -571,8 +551,8 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     <div class="tab-pane" id="tab-admin">
       <div class="card">
         <div class="card-head">👥 Kelola Akun Pengguna</div>
-        <p style="font-size:13px;color:var(--slate);margin-bottom:16px">Akun dikelola langsung di Google Sheets tab <strong>Users</strong>. Refresh untuk muat ulang data.</p>
-        <button class="btn-primary" onclick="loadAll()" style="width:auto;padding:10px 20px">🔄 Refresh Data</button>
+        <p style="font-size:13px;color:var(--slate);margin-bottom:16px">Akun dikelola langsung di Google Sheets tab <strong>Users</strong>. Klik refresh untuk muat ulang.</p>
+        <button class="btn-primary" onclick="loadAll().then(renderAll)" style="width:auto;padding:10px 20px">🔄 Refresh Data</button>
         <div id="user-list" style="margin-top:20px"></div>
       </div>
       <div class="card">
@@ -581,12 +561,14 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           <div class="fg full">
             <label>Google Sheets ID</label>
             <input type="text" class="inp" id="cfg-sheet-id" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms">
-            <span style="font-size:11px;color:var(--slate);margin-top:4px">Ambil dari URL Google Sheets: docs.google.com/spreadsheets/d/<strong>[ID INI]</strong>/edit</span>
           </div>
           <div class="fg full">
             <label>Google API Key</label>
             <input type="text" class="inp" id="cfg-api-key" placeholder="AIzaSy...">
-            <span style="font-size:11px;color:var(--slate);margin-top:4px">Dari Google Cloud Console → APIs & Services → Credentials</span>
+          </div>
+          <div class="fg full">
+            <label>Apps Script URL</label>
+            <input type="text" class="inp" id="cfg-script-url" placeholder="https://script.google.com/macros/s/...">
           </div>
         </div>
         <br>
@@ -594,28 +576,33 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /app -->
+  </div>
+</div>
 
 <script>
 // ============================================================
-// CONFIG & STATE
+// CONFIG — sudah terisi dengan data sekolah
 // ============================================================
-let CFG = JSON.parse(localStorage.getItem('poin_cfg') || '{"sheetId":"1Fqes4QGVLhJONeRknyg8GKc5dZalXsNwkLIjesXLw2E","apiKey":"AIzaSyCs8CZiA6ODqXW8eKk46L0ebN6z97nQVAc","appsScriptUrl":"https://script.google.com/macros/s/AKfycbx8DMHVOrTeplVekHbjQ0XFOBgOZJ_vEVurjMuiS3bXHFEqnZDSZcdwugVvjj09Y8UZhg/exec"}');
-let SESSION = null; // { username, role, kelas, nama }
-let ALL_DATA = [];   // semua pelanggaran
-let ALL_USERS = [];  // akun user
-let SISWA_LIST = []; // nama siswa dari sheet
+const DEFAULT_CFG = {
+  sheetId: '1Fqes4QGVLhJONeRknyg8GKc5dZalXsNwkLIjesXLw2E',
+  apiKey:  'AIzaSyCs8CZiA6ODqXW8eKk46L0ebN6z97nQVAc',
+  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbybMqoyofqZSnY6yDgd09jCv8RINO9kaOeMQOToCvS7dL3u2VJLKmohmzSzNaCmbvxGFQ/exec'
+};
+let CFG = Object.assign({}, DEFAULT_CFG, JSON.parse(localStorage.getItem('poin_cfg') || '{}'));
 
-const SHEET_PELN = 'Pelanggaran';
+let SESSION  = null;
+let ALL_DATA  = [];
+let ALL_USERS = [];
+let SISWA_LIST = [];
+
+const SHEET_PELN  = 'Pelanggaran';
 const SHEET_USERS = 'Users';
 const SHEET_SISWA = 'Siswa';
 
 // ============================================================
-// PELANGGARAN DATA
+// PELANGGARAN LIST (Pasal 40)
 // ============================================================
 const PELN_LIST = [
-  // [label, poin, kategori]
   // RINGAN
   ['Terlambat lebih dari 15 menit',5,'ringan'],
   ['Tidak membawa kartu pelajar',3,'ringan'],
@@ -698,44 +685,26 @@ const KELAS_LIST = [
 ];
 
 // ============================================================
-// GOOGLE SHEETS API
+// SHEETS API
 // ============================================================
 const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 
 async function sheetsGet(range) {
-  const url = `${BASE}/${CFG.sheetId}/values/${range}?key=${CFG.apiKey}`;
+  const url = `${BASE}/${CFG.sheetId}/values/${encodeURIComponent(range)}?key=${CFG.apiKey}`;
   const r = await fetch(url);
-  if (!r.ok) throw new Error('Gagal membaca Sheets: ' + r.status);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   return (await r.json()).values || [];
 }
 
-async function sheetsAppend(range, values) {
-  const url = `${BASE}/${CFG.sheetId}/values/${range}:append?valueInputOption=USER_ENTERED&key=${CFG.apiKey}`;
-  // Append requires OAuth — fallback: we use Apps Script web app URL
-  // For read-only API key, we'll use a different approach
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ values })
-  });
-  if (!r.ok) throw new Error('Gagal menulis ke Sheets: ' + r.status);
-  return await r.json();
-}
-
-// ============================================================
-// APPS SCRIPT BRIDGE (untuk write)
-// Karena Google Sheets API write butuh OAuth,
-// kita pakai Google Apps Script Web App sebagai proxy
-// ============================================================
-async function appsScriptPost(action, payload) {
+async function scriptPost(action, payload) {
   const url = CFG.appsScriptUrl;
-  if (!url) throw new Error('Apps Script URL belum dikonfigurasi');
+  if (!url) throw new Error('Apps Script URL belum diset');
   const r = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({ action, ...payload })
   });
-  if (!r.ok) throw new Error('Gagal ke Apps Script');
+  if (!r.ok) throw new Error('HTTP ' + r.status);
   return await r.json();
 }
 
@@ -743,25 +712,18 @@ async function appsScriptPost(action, payload) {
 // LOAD DATA
 // ============================================================
 async function loadAll() {
-  if (!CFG.sheetId || !CFG.apiKey) {
-    useLocalData();
-    return;
-  }
   showLoading('Memuat data dari Google Sheets...');
   try {
-    // Load users
-    const uRows = await sheetsGet(`${SHEET_USERS}!A2:E`);
+    const [uRows, sRows, pRows] = await Promise.all([
+      sheetsGet(`${SHEET_USERS}!A2:E`),
+      sheetsGet(`${SHEET_SISWA}!A2:B`),
+      sheetsGet(`${SHEET_PELN}!A2:J`)
+    ]);
     ALL_USERS = uRows.map(r => ({
       username: r[0]||'', password: r[1]||'',
       role: r[2]||'', kelas: r[3]||'', nama: r[4]||''
     }));
-
-    // Load siswa
-    const sRows = await sheetsGet(`${SHEET_SISWA}!A2:B`);
     SISWA_LIST = sRows.map(r => ({ nama: r[0]||'', kelas: r[1]||'' }));
-
-    // Load pelanggaran
-    const pRows = await sheetsGet(`${SHEET_PELN}!A2:J`);
     ALL_DATA = pRows.map(r => ({
       id: r[0]||'', tanggal: r[1]||'', nama: r[2]||'',
       kelas: r[3]||'', pelanggaran: r[4]||'',
@@ -769,32 +731,14 @@ async function loadAll() {
       guru: r[7]||'', ket: r[8]||''
     }));
     hideLoading();
-    renderAll();
-    toast('Data berhasil dimuat', 'sukses');
   } catch(e) {
     hideLoading();
-    toast('Gagal memuat dari Sheets: ' + e.message, 'error');
-    useLocalData();
+    toast('Gagal memuat Sheets: ' + e.message, 'error');
+    // fallback local
+    ALL_DATA  = JSON.parse(localStorage.getItem('poin_data')  || '[]');
+    ALL_USERS = JSON.parse(localStorage.getItem('poin_users') || '[]');
+    SISWA_LIST= JSON.parse(localStorage.getItem('poin_siswa') || '[]');
   }
-}
-
-function useLocalData() {
-  ALL_DATA = JSON.parse(localStorage.getItem('poin_data') || '[]');
-  ALL_USERS = JSON.parse(localStorage.getItem('poin_users') || '[]');
-  SISWA_LIST = JSON.parse(localStorage.getItem('poin_siswa') || '[]');
-  if (!ALL_USERS.length) setupDefaultUsers();
-  renderAll();
-}
-
-function setupDefaultUsers() {
-  ALL_USERS = [
-    { username:'admin', password:'admin123', role:'kesiswaan', kelas:'', nama:'Kabid Kesiswaan' },
-    { username:'kepsek', password:'kepsek123', role:'pimpinan', kelas:'', nama:'Kepala Sekolah' },
-    { username:'walas1a', password:'walas123', role:'walas', kelas:'1A', nama:'Wali Kelas 1A' },
-    { username:'walas2a', password:'walas123', role:'walas', kelas:'2A', nama:'Wali Kelas 2A' },
-  ];
-  localStorage.setItem('poin_users', JSON.stringify(ALL_USERS));
-  toast('Mode offline: akun demo disiapkan', 'sukses');
 }
 
 // ============================================================
@@ -803,7 +747,9 @@ function setupDefaultUsers() {
 function doLogin() {
   const usr = document.getElementById('usr').value.trim();
   const pwd = document.getElementById('pwd').value;
-  const user = ALL_USERS.find(u => u.username.toLowerCase() === usr.toLowerCase() && u.password === pwd);
+  const user = ALL_USERS.find(u =>
+    u.username.toLowerCase() === usr.toLowerCase() && u.password === pwd
+  );
   if (!user) {
     document.getElementById('login-err').style.display = 'block';
     return;
@@ -827,142 +773,59 @@ function doLogout() {
 // INIT APP
 // ============================================================
 function initApp() {
-  // Header
+  const roleLabel = { walas:'Wali Kelas', kesiswaan:'Kabid Kesiswaan', pimpinan:'Pimpinan' };
   document.getElementById('hdr-sub').textContent =
     SESSION.role === 'walas' ? `Wali Kelas ${SESSION.kelas}` : SESSION.nama;
-  const roleLabel = { walas:'Wali Kelas', kesiswaan:'Kabid Kesiswaan', pimpinan:'Pimpinan' };
   document.getElementById('hdr-role').textContent = '👤 ' + (roleLabel[SESSION.role]||SESSION.role);
 
-  // Build nav
-  const tabs = [];
-  if (SESSION.role === 'walas') {
-    tabs.push({ id:'input', label:'✏️ Input' });
-    tabs.push({ id:'rekap', label:'📊 Rekap Kelas' });
-  } else if (SESSION.role === 'kesiswaan') {
-    tabs.push({ id:'rekap', label:'📊 Semua Data' });
-    tabs.push({ id:'laporan', label:'📄 Laporan' });
-    tabs.push({ id:'admin', label:'⚙️ Admin' });
-  } else if (SESSION.role === 'pimpinan') {
-    tabs.push({ id:'rekap', label:'📊 Data Siswa' });
-    tabs.push({ id:'laporan', label:'📄 Laporan' });
-  }
+  // Build nav tabs
+  const tabs = SESSION.role === 'walas'
+    ? [{ id:'input', label:'✏️ Input' }, { id:'rekap', label:'📊 Rekap Kelas' }]
+    : SESSION.role === 'kesiswaan'
+    ? [{ id:'rekap', label:'📊 Semua Data' }, { id:'laporan', label:'📄 Laporan' }, { id:'admin', label:'⚙️ Admin' }]
+    : [{ id:'rekap', label:'📊 Data Siswa' }, { id:'laporan', label:'📄 Laporan' }];
+
   const nav = document.getElementById('nav-tabs');
   nav.innerHTML = tabs.map((t,i) =>
     `<button class="nav-tab ${i===0?'active':''}" onclick="switchTab('${t.id}',this)">${t.label}</button>`
   ).join('');
 
-  // Show first tab
   if (tabs.length) switchTab(tabs[0].id, nav.firstChild);
 
-  // Prefill guru
+  // Prefill
   document.getElementById('inp-guru').value = SESSION.nama || '';
-
-  // Setup kelas dropdown
-  setupKelasDropdown();
-
-  // Setup pelanggaran dropdown
-  setupPelnDropdown();
-
-  // Default tanggal
   document.getElementById('inp-tgl').value = today();
 
-  // Rekap filter kelas
+  // Kelas dropdown
+  const sel = document.getElementById('inp-kelas');
+  const kelasList = SESSION.role === 'walas' ? [SESSION.kelas] : KELAS_LIST;
+  sel.innerHTML = '<option value="">— Pilih Kelas —</option>' +
+    kelasList.map(k => `<option value="${k}">${k}</option>`).join('');
+  if (SESSION.role === 'walas') { sel.value = SESSION.kelas; onKelasChange(); }
+
+  // Rekap kelas filter
   const fsk = document.getElementById('f-siswa-kelas');
   fsk.innerHTML = '<option value="">Semua Kelas</option>' +
     KELAS_LIST.map(k => `<option>${k}</option>`).join('');
 
-  // Hapus kolom aksi jika bukan kesiswaan
-  if (SESSION.role !== 'kesiswaan') document.getElementById('th-aksi').style.display = 'none';
+  if (SESSION.role !== 'kesiswaan')
+    document.getElementById('th-aksi').style.display = 'none';
 
-  // Config admin
-  document.getElementById('cfg-sheet-id').value = CFG.sheetId || '';
-  document.getElementById('cfg-api-key').value = CFG.apiKey || '';
+  // Config fields
+  document.getElementById('cfg-sheet-id').value    = CFG.sheetId || '';
+  document.getElementById('cfg-api-key').value     = CFG.apiKey  || '';
+  document.getElementById('cfg-script-url').value  = CFG.appsScriptUrl || '';
 
-  // Default laporan periode
+  // Laporan default periode
   const now = new Date();
-  document.getElementById('lap-dari').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
+  document.getElementById('lap-dari').value   = `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
   document.getElementById('lap-sampai').value = today();
 
   renderAll();
 }
 
-function setupKelasDropdown() {
-  const sel = document.getElementById('inp-kelas');
-  let list = SESSION.role === 'walas' ? [SESSION.kelas] : KELAS_LIST;
-  sel.innerHTML = '<option value="">— Pilih Kelas —</option>' +
-    list.map(k => `<option value="${k}">${k}</option>`).join('');
-  if (SESSION.role === 'walas') { sel.value = SESSION.kelas; onKelasChange(); }
-}
-
-function setupPelnDropdown() {
-  // now using search input, nothing to setup
-}
-
-let selectedPeln = null; // { label, poin, kat }
-let pelnBlurTimer = null;
-
-function onPelnInput() {
-  selectedPeln = null;
-  document.getElementById('poin-display').textContent = '—';
-  document.getElementById('poin-display').className = 'poin-pill empty';
-  const q = document.getElementById('inp-peln-search').value;
-  renderPelnDD(q);
-}
-
-function onPelnFocus() {
-  clearTimeout(pelnBlurTimer);
-  const q = document.getElementById('inp-peln-search').value;
-  renderPelnDD(q);
-}
-
-function onPelnBlur() {
-  pelnBlurTimer = setTimeout(() => {
-    document.getElementById('peln-dd').classList.remove('open');
-  }, 200);
-}
-
-function onPelnKeydown(e) {
-  if (e.key === 'Backspace' || e.key === 'Delete') {
-    selectedPeln = null;
-    document.getElementById('poin-display').textContent = '—';
-    document.getElementById('poin-display').className = 'poin-pill empty';
-  }
-  if (e.key === 'Escape') {
-    document.getElementById('peln-dd').classList.remove('open');
-  }
-}
-
-function renderPelnDD(q) {
-  const dd = document.getElementById('peln-dd');
-  const katIcon = { ringan:'🟡', sedang:'🟠', berat:'🔴' };
-  let filtered = q
-    ? PELN_LIST.filter(([label]) => fuzzyMatch(label, q))
-    : PELN_LIST;
-
-  if (!filtered.length) {
-    dd.innerHTML = '<div class="dd-empty">Tidak ditemukan</div>';
-  } else {
-    dd.innerHTML = filtered.slice(0,20).map(([label,poin,kat]) =>
-      `<div class="dd-item" onmousedown="pilihPeln('${label.replace(/'/g,"\'")}',${poin},'${kat}')">
-        <span>${katIcon[kat]} ${highlight(label, q||'')}</span>
-        <span class="dd-kelas" style="font-weight:700;color:${poin>=30?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin} poin</span>
-      </div>`
-    ).join('');
-  }
-  dd.classList.add('open');
-}
-
-function pilihPeln(label, poin, kat) {
-  selectedPeln = { label, poin, kat };
-  document.getElementById('inp-peln-search').value = label;
-  document.getElementById('peln-dd').classList.remove('open');
-  const el = document.getElementById('poin-display');
-  el.textContent = poin + ' poin';
-  el.className = 'poin-pill ' + kat;
-}
-
 // ============================================================
-// KELAS → SISWA FUZZY SEARCH
+// FUZZY SISWA SEARCH
 // ============================================================
 let selectedSiswa = '';
 let ddBlurTimer = null;
@@ -970,31 +833,23 @@ let ddBlurTimer = null;
 function onKelasChange() {
   selectedSiswa = '';
   document.getElementById('inp-siswa').value = '';
-  document.getElementById('siswa-dd').innerHTML = '';
   document.getElementById('siswa-dd').classList.remove('open');
 }
 
 function getSiswaByKelas(kelas) {
-  // Dari SISWA_LIST (sheets) + fallback dari ALL_DATA (nama yang pernah dicatat)
-  let list = [];
-  if (kelas) {
-    list = SISWA_LIST.filter(s => s.kelas === kelas).map(s => s.nama);
-    // tambah dari data historis
-    const fromData = [...new Set(ALL_DATA.filter(d => d.kelas === kelas).map(d => d.nama))];
-    fromData.forEach(n => { if (!list.includes(n)) list.push(n); });
-  } else {
-    list = [...new Set([
-      ...SISWA_LIST.map(s => s.nama),
-      ...ALL_DATA.map(d => d.nama)
-    ])];
-  }
+  let list = kelas
+    ? SISWA_LIST.filter(s => s.kelas === kelas).map(s => s.nama)
+    : SISWA_LIST.map(s => s.nama);
+  const fromData = [...new Set(
+    ALL_DATA.filter(d => !kelas || d.kelas === kelas).map(d => d.nama)
+  )];
+  fromData.forEach(n => { if (!list.includes(n)) list.push(n); });
   return [...new Set(list)].sort();
 }
 
 function fuzzyMatch(str, query) {
   str = str.toLowerCase(); query = query.toLowerCase();
   if (str.includes(query)) return true;
-  // loose fuzzy: setiap huruf query harus muncul berurutan
   let qi = 0;
   for (let ch of str) { if (ch === query[qi]) qi++; if (qi === query.length) return true; }
   return false;
@@ -1008,54 +863,34 @@ function highlight(str, query) {
 }
 
 function onSiswaInput() {
+  selectedSiswa = '';
   const kelas = document.getElementById('inp-kelas').value;
   const q = document.getElementById('inp-siswa').value;
-  const all = getSiswaByKelas(kelas);
-  const filtered = q ? all.filter(n => fuzzyMatch(n, q)) : all;
-  renderDD(filtered, q);
-  selectedSiswa = '';
+  renderSiswaDD(getSiswaByKelas(kelas).filter(n => !q || fuzzyMatch(n, q)), q);
 }
-
 function onSiswaFocus() {
   clearTimeout(ddBlurTimer);
   const kelas = document.getElementById('inp-kelas').value;
   const q = document.getElementById('inp-siswa').value;
-  const all = getSiswaByKelas(kelas);
-  const filtered = q ? all.filter(n => fuzzyMatch(n, q)) : all;
-  renderDD(filtered, q);
+  renderSiswaDD(getSiswaByKelas(kelas).filter(n => !q || fuzzyMatch(n, q)), q);
 }
-
 function onSiswaBlur() {
-  ddBlurTimer = setTimeout(() => {
-    document.getElementById('siswa-dd').classList.remove('open');
-  }, 200);
+  ddBlurTimer = setTimeout(() => document.getElementById('siswa-dd').classList.remove('open'), 200);
 }
-
 function onSiswaKeydown(e) {
-  // Allow backspace and delete to clear selection
-  if (e.key === 'Backspace' || e.key === 'Delete') {
-    selectedSiswa = '';
-  }
-  // Close dropdown on Escape
-  if (e.key === 'Escape') {
-    document.getElementById('siswa-dd').classList.remove('open');
-  }
+  if (e.key === 'Backspace' || e.key === 'Delete') selectedSiswa = '';
+  if (e.key === 'Escape') document.getElementById('siswa-dd').classList.remove('open');
 }
-
-function renderDD(list, q) {
+function renderSiswaDD(list, q) {
   const dd = document.getElementById('siswa-dd');
-  if (!list.length) {
-    dd.innerHTML = `<div class="dd-empty">Tidak ditemukan — nama baru akan dicatat otomatis</div>`;
-  } else {
-    dd.innerHTML = list.slice(0,30).map(n =>
-      `<div class="dd-item" onmousedown="pilihSiswa('${n.replace(/'/g,"\\'")}')">
-        <span>${highlight(n, q)}</span>
-      </div>`
-    ).join('');
-  }
+  dd.innerHTML = list.length
+    ? list.slice(0,30).map(n =>
+        `<div class="dd-item" onmousedown="pilihSiswa('${n.replace(/'/g,"\\'")}')">
+          <span>${highlight(n, q)}</span>
+        </div>`).join('')
+    : `<div class="dd-empty">Tidak ditemukan — nama baru dicatat otomatis</div>`;
   dd.classList.add('open');
 }
-
 function pilihSiswa(nama) {
   selectedSiswa = nama;
   document.getElementById('inp-siswa').value = nama;
@@ -1063,16 +898,50 @@ function pilihSiswa(nama) {
 }
 
 // ============================================================
-// PELANGGARAN CHANGE
+// FUZZY PELANGGARAN SEARCH
 // ============================================================
-function onPelnChange() {
-  const sel = document.getElementById('inp-peln');
-  const opt = sel.options[sel.selectedIndex];
-  const poin = opt?.dataset?.poin;
-  const kat = opt?.dataset?.kat;
+let selectedPeln = null;
+let pelnBlurTimer = null;
+
+function onPelnInput() {
+  selectedPeln = null;
+  setPoinDisplay(null);
+  renderPelnDD(document.getElementById('inp-peln-search').value);
+}
+function onPelnFocus() {
+  clearTimeout(pelnBlurTimer);
+  renderPelnDD(document.getElementById('inp-peln-search').value);
+}
+function onPelnBlur() {
+  pelnBlurTimer = setTimeout(() => document.getElementById('peln-dd').classList.remove('open'), 200);
+}
+function onPelnKeydown(e) {
+  if (e.key === 'Backspace' || e.key === 'Delete') { selectedPeln = null; setPoinDisplay(null); }
+  if (e.key === 'Escape') document.getElementById('peln-dd').classList.remove('open');
+}
+function renderPelnDD(q) {
+  const dd = document.getElementById('peln-dd');
+  const katIcon = { ringan:'🟡', sedang:'🟠', berat:'🔴' };
+  const filtered = q ? PELN_LIST.filter(([label]) => fuzzyMatch(label, q)) : PELN_LIST;
+  dd.innerHTML = filtered.length
+    ? filtered.slice(0,20).map(([label,poin,kat]) =>
+        `<div class="dd-item" onmousedown="pilihPeln('${label.replace(/'/g,"\\'")}',${poin},'${kat}')">
+          <span>${katIcon[kat]} ${highlight(label, q||'')}</span>
+          <span class="dd-kelas" style="font-weight:700;color:${poin>=30?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin} poin</span>
+        </div>`).join('')
+    : '<div class="dd-empty">Tidak ditemukan</div>';
+  dd.classList.add('open');
+}
+function pilihPeln(label, poin, kat) {
+  selectedPeln = { label, poin, kat };
+  document.getElementById('inp-peln-search').value = label;
+  document.getElementById('peln-dd').classList.remove('open');
+  setPoinDisplay(selectedPeln);
+}
+function setPoinDisplay(p) {
   const el = document.getElementById('poin-display');
-  if (poin) { el.textContent = poin + ' poin'; el.className = 'poin-pill ' + kat; }
-  else { el.textContent = '—'; el.className = 'poin-pill empty'; }
+  if (p) { el.textContent = p.poin + ' poin'; el.className = 'poin-pill ' + p.kat; }
+  else    { el.textContent = '—'; el.className = 'poin-pill empty'; }
 }
 
 // ============================================================
@@ -1080,10 +949,10 @@ function onPelnChange() {
 // ============================================================
 async function simpan() {
   const kelas = document.getElementById('inp-kelas').value;
-  const nama = document.getElementById('inp-siswa').value.trim() || selectedSiswa;
-  const tgl = document.getElementById('inp-tgl').value;
-  const guru = document.getElementById('inp-guru').value.trim();
-  const ket = document.getElementById('inp-ket').value.trim();
+  const nama  = (document.getElementById('inp-siswa').value.trim() || selectedSiswa).trim();
+  const tgl   = document.getElementById('inp-tgl').value;
+  const guru  = document.getElementById('inp-guru').value.trim();
+  const ket   = document.getElementById('inp-ket').value.trim();
 
   if (!kelas || !nama || !selectedPeln || !tgl) {
     toast('Harap isi: Kelas, Nama, Pelanggaran, dan Tanggal!', 'error'); return;
@@ -1101,27 +970,23 @@ async function simpan() {
   const btn = document.getElementById('btn-simpan');
   btn.disabled = true; btn.innerHTML = '<div class="spin"></div> Menyimpan...';
 
-  // Simpan ke local dulu
+  // Simpan lokal dulu
   ALL_DATA.push(entry);
   localStorage.setItem('poin_data', JSON.stringify(ALL_DATA));
 
-  // Coba simpan ke Sheets jika dikonfigurasi
-  if (CFG.sheetId && CFG.appsScriptUrl) {
-    try {
-      await appsScriptPost('append', {
-        sheet: SHEET_PELN,
-        row: [entry.id, entry.tanggal, entry.nama, entry.kelas,
-              entry.pelanggaran, entry.kategori, entry.poin, entry.guru, entry.ket]
-      });
-      toast('✅ Tersimpan ke Google Sheets!', 'sukses');
-    } catch(e) {
-      toast('Tersimpan lokal (Sheets gagal: ' + e.message + ')', 'error');
-    }
-  } else {
-    toast('✅ Data pelanggaran tersimpan!', 'sukses');
+  // Kirim ke Sheets via Apps Script
+  try {
+    await scriptPost('append', {
+      sheet: SHEET_PELN,
+      row: [entry.id, entry.tanggal, entry.nama, entry.kelas,
+            entry.pelanggaran, entry.kategori, entry.poin, entry.guru, entry.ket]
+    });
+    toast('✅ Tersimpan ke Google Sheets!', 'sukses');
+  } catch(e) {
+    toast('⚠️ Tersimpan lokal (Sheets: ' + e.message + ')', 'error');
   }
 
-  // Auto tambah siswa baru ke list
+  // Tambah siswa baru ke list lokal
   if (!SISWA_LIST.find(s => s.nama === nama && s.kelas === kelas)) {
     SISWA_LIST.push({ nama, kelas });
     localStorage.setItem('poin_siswa', JSON.stringify(SISWA_LIST));
@@ -1131,11 +996,11 @@ async function simpan() {
   document.getElementById('inp-siswa').value = '';
   document.getElementById('inp-peln-search').value = '';
   document.getElementById('inp-ket').value = '';
-  document.getElementById('poin-display').textContent = '—';
-  document.getElementById('poin-display').className = 'poin-pill empty';
+  setPoinDisplay(null);
   selectedSiswa = '';
-  selectedPeln = null;
-  btn.disabled = false; btn.innerHTML = '💾 Simpan Pelanggaran';
+  selectedPeln  = null;
+  btn.disabled  = false;
+  btn.innerHTML = '💾 Simpan Pelanggaran';
 
   renderAll();
 }
@@ -1144,8 +1009,9 @@ async function simpan() {
 // RENDER
 // ============================================================
 function getDataForRole() {
-  if (SESSION.role === 'walas') return ALL_DATA.filter(d => d.kelas === SESSION.kelas);
-  return ALL_DATA;
+  return SESSION.role === 'walas'
+    ? ALL_DATA.filter(d => d.kelas === SESSION.kelas)
+    : ALL_DATA;
 }
 
 function renderAll() {
@@ -1160,9 +1026,8 @@ function renderStats() {
   const data = getDataForRole();
   const map = {};
   data.forEach(d => {
-    const k = d.nama + '|' + d.kelas;
-    if (!map[k]) map[k] = 0;
-    map[k] += d.poin;
+    const k = d.nama+'|'+d.kelas;
+    map[k] = (map[k]||0) + d.poin;
   });
   const vals = Object.values(map);
   const el = document.getElementById('stats-rekap');
@@ -1176,13 +1041,13 @@ function renderStats() {
 
 function renderRiwayat() {
   let data = getDataForRole();
-  const q = (document.getElementById('f-nama')?.value||'').toLowerCase();
+  const q   = (document.getElementById('f-nama')?.value||'').toLowerCase();
   const kat = document.getElementById('f-kat')?.value||'';
-  if (q) data = data.filter(d => d.nama.toLowerCase().includes(q));
+  if (q)   data = data.filter(d => d.nama.toLowerCase().includes(q));
   if (kat) data = data.filter(d => d.kategori === kat);
   data = [...data].sort((a,b) => b.tanggal.localeCompare(a.tanggal));
 
-  const canDelete = SESSION.role === 'kesiswaan';
+  const canDel = SESSION.role === 'kesiswaan';
   document.getElementById('tbody-riwayat').innerHTML = data.length
     ? data.map((d,i) => `<tr>
         <td style="color:var(--slate);font-size:12px">${i+1}</td>
@@ -1193,14 +1058,14 @@ function renderRiwayat() {
         <td><span class="badge ${d.kategori}">${katLabel(d.kategori)}</span></td>
         <td style="font-weight:700;color:${poinColor(d.kategori)}">${d.poin}</td>
         <td style="font-size:12px;color:var(--slate)">${d.guru||'—'}</td>
-        ${canDelete ? `<td><button class="btn-del" onclick="hapus('${d.id}')">🗑️</button></td>` : '<td></td>'}
+        ${canDel ? `<td><button class="btn-del" onclick="hapus('${d.id}')">🗑️</button></td>` : '<td></td>'}
       </tr>`).join('')
     : '<tr><td colspan="9" class="td-empty">Belum ada data pelanggaran</td></tr>';
 }
 
 function renderRekapSiswa() {
   let data = getDataForRole();
-  const q = (document.getElementById('f-siswa-nama')?.value||'').toLowerCase();
+  const q     = (document.getElementById('f-siswa-nama')?.value||'').toLowerCase();
   const kelas = document.getElementById('f-siswa-kelas')?.value||'';
 
   const map = {};
@@ -1215,11 +1080,12 @@ function renderRekapSiswa() {
 
   const el = document.getElementById('rekap-siswa');
   if (!el) return;
-  if (!siswa.length) { el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--slate);font-style:italic">Belum ada data siswa</div>'; return; }
-
+  if (!siswa.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--slate);font-style:italic">Belum ada data siswa</div>';
+    return;
+  }
   el.innerHTML = siswa.map(s => {
     const t = getTindakan(s.poin);
-    const pc = poinColor2(s.poin);
     return `<div class="siswa-card">
       <div class="siswa-head" onclick="toggleSiswa(this)">
         <div class="ava" style="background:${avaColor(s.nama)}">${s.nama[0].toUpperCase()}</div>
@@ -1227,7 +1093,7 @@ function renderRekapSiswa() {
           <div class="nama">${s.nama}</div>
           <div class="meta">Kelas ${s.kelas} · ${s.list.length}× pelanggaran</div>
         </div>
-        <div class="siswa-poin" style="color:${pc}">${s.poin} <span style="font-size:12px;font-weight:500;color:var(--slate)">poin</span></div>
+        <div class="siswa-poin" style="color:${poinColor2(s.poin)}">${s.poin} <span style="font-size:12px;font-weight:500;color:var(--slate)">poin</span></div>
         <div class="siswa-arrow">▼</div>
       </div>
       <div class="siswa-body">
@@ -1251,7 +1117,7 @@ function renderRekapSiswa() {
 
 function toggleSiswa(head) {
   const body = head.nextElementSibling;
-  const arr = head.querySelector('.siswa-arrow');
+  const arr  = head.querySelector('.siswa-arrow');
   body.classList.toggle('open');
   arr.classList.toggle('open');
 }
@@ -1260,7 +1126,7 @@ function renderUserList() {
   const el = document.getElementById('user-list');
   if (!el) return;
   const roleLabel = { walas:'Wali Kelas', kesiswaan:'Kabid Kesiswaan', pimpinan:'Pimpinan' };
-  const roleCls = { walas:'role-walas', kesiswaan:'role-kesiswaan', pimpinan:'role-pimpinan' };
+  const roleCls   = { walas:'role-walas', kesiswaan:'role-kesiswaan', pimpinan:'role-pimpinan' };
   el.innerHTML = ALL_USERS.map(u => `
     <div class="user-row">
       <div class="user-ava" style="background:${avaColor(u.nama||u.username)}">${(u.nama||u.username)[0].toUpperCase()}</div>
@@ -1275,10 +1141,13 @@ function renderUserList() {
 // ============================================================
 // HAPUS
 // ============================================================
-function hapus(id) {
+async function hapus(id) {
   if (!confirm('Hapus data ini?')) return;
   ALL_DATA = ALL_DATA.filter(d => d.id !== id);
   localStorage.setItem('poin_data', JSON.stringify(ALL_DATA));
+  try {
+    await scriptPost('delete', { sheet: SHEET_PELN, id });
+  } catch(e) { /* silent */ }
   renderAll();
   toast('Data dihapus', 'sukses');
 }
@@ -1287,7 +1156,7 @@ function hapus(id) {
 // LAPORAN
 // ============================================================
 function generateLaporan() {
-  const dari = document.getElementById('lap-dari').value;
+  const dari   = document.getElementById('lap-dari').value;
   const sampai = document.getElementById('lap-sampai').value;
   let data = ALL_DATA.filter(d => (!dari||d.tanggal>=dari) && (!sampai||d.tanggal<=sampai));
 
@@ -1305,7 +1174,7 @@ function generateLaporan() {
     <div style="border:1.5px solid var(--border);border-radius:12px;padding:28px;background:white">
       <div style="text-align:center;border-bottom:2px solid var(--gelap);padding-bottom:16px;margin-bottom:20px">
         <div style="font-size:12px;color:var(--slate);font-weight:700;margin-bottom:4px;letter-spacing:0.05em">LAPORAN POIN PELANGGARAN SISWA</div>
-        <div style="font-size:18px;font-weight:800">UNIT SD</div>
+        <div style="font-size:18px;font-weight:800">SDIT CQ DEPOK</div>
         <div style="font-size:12px;color:var(--slate);margin-top:4px">Periode: ${per} &nbsp;·&nbsp; Dicetak: ${tgl}</div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">
@@ -1339,36 +1208,29 @@ function generateLaporan() {
         }).join('') : '<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--slate);font-style:italic">Tidak ada data pada periode ini</td></tr>'}</tbody>
       </table>
       <div style="border-top:1.5px solid var(--border);padding-top:20px;margin-top:24px;display:flex;justify-content:space-between">
-        <div><div style="font-size:12px;color:var(--slate);margin-bottom:44px">Mengetahui,</div>
-          <div style="font-size:12px;font-weight:700;border-top:1px solid var(--gelap);padding-top:4px">Kepala Sekolah</div></div>
-        <div><div style="font-size:12px;color:var(--slate);margin-bottom:4px">______________, ${tgl}</div>
+        <div>
+          <div style="font-size:12px;color:var(--slate);margin-bottom:44px">Mengetahui,</div>
+          <div style="font-size:12px;font-weight:700;border-top:1px solid var(--gelap);padding-top:4px">Kepala Sekolah</div>
+        </div>
+        <div>
+          <div style="font-size:12px;color:var(--slate);margin-bottom:4px">______________, ${tgl}</div>
           <div style="font-size:12px;color:var(--slate);margin-bottom:40px">Kabid Kesiswaan,</div>
-          <div style="font-size:12px;font-weight:700;border-top:1px solid var(--gelap);padding-top:4px">( _________________ )</div></div>
+          <div style="font-size:12px;font-weight:700;border-top:1px solid var(--gelap);padding-top:4px">( _________________ )</div>
+        </div>
       </div>
     </div>`;
 }
 
 // ============================================================
-// CONFIG
+// CONFIG SAVE
 // ============================================================
-function showConfig() {
-  if (SESSION) switchTab('admin', document.querySelector('.nav-tab:last-child'));
-  else { alert('Login dulu sebagai admin/kesiswaan, lalu buka tab Admin > Konfigurasi API'); }
-}
-
 function saveConfig() {
-  CFG.sheetId = document.getElementById('cfg-sheet-id').value.trim();
-  CFG.apiKey = document.getElementById('cfg-api-key').value.trim();
+  CFG.sheetId       = document.getElementById('cfg-sheet-id').value.trim();
+  CFG.apiKey        = document.getElementById('cfg-api-key').value.trim();
+  CFG.appsScriptUrl = document.getElementById('cfg-script-url').value.trim();
   localStorage.setItem('poin_cfg', JSON.stringify(CFG));
-  checkConfigBanner();
-  toast('Konfigurasi disimpan! Memuat data...', 'sukses');
-  loadAll();
-}
-
-function checkConfigBanner() {
-  const banner = document.getElementById('config-banner');
-  if (CFG.sheetId && CFG.apiKey) banner.classList.add('hidden');
-  else banner.classList.remove('hidden');
+  toast('Konfigurasi disimpan! Memuat ulang...', 'sukses');
+  loadAll().then(renderAll);
 }
 
 // ============================================================
@@ -1397,16 +1259,15 @@ function katLabel(k) { return {ringan:'🟡 Ringan',sedang:'🟠 Sedang',berat:'
 function poinColor(kat) { return {ringan:'#92400e',sedang:'#c2410c',berat:'var(--merah)'}[kat]||'inherit'; }
 function poinColor2(p) { return p>=71?'var(--merah)':p>=41?'var(--orange)':p>=21?'var(--kuning)':'var(--hijau)'; }
 function avaColor(n) {
-  const c=['#15643b','#2563eb','#7c3aed','#db2777','#ea580c','#0891b2','#16a34a'];
-  let h=0; for(let ch of n) h=(h*31+ch.charCodeAt(0))%c.length; return c[h];
+  const c = ['#15643b','#2563eb','#7c3aed','#db2777','#ea580c','#0891b2','#16a34a'];
+  let h = 0; for (let ch of n) h = (h*31+ch.charCodeAt(0))%c.length; return c[h];
 }
 function fmtDate(s) {
   if (!s) return '—';
-  const d = new Date(s+'T00:00:00');
-  return d.toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
+  return new Date(s+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});
 }
 function today() { return new Date().toISOString().split('T')[0]; }
-function pad(n) { return String(n).padStart(2,'0'); }
+function pad(n)   { return String(n).padStart(2,'0'); }
 
 function showLoading(txt) {
   document.getElementById('loading-text').textContent = txt||'Memuat...';
@@ -1418,22 +1279,17 @@ function toast(msg, type='') {
   const el = document.getElementById('toast');
   el.textContent = msg; el.className = 'toast show ' + type;
   clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 3000);
+  el._t = setTimeout(() => el.classList.remove('show'), 3500);
 }
 
 // ============================================================
-// INIT
+// BOOT
 // ============================================================
-checkConfigBanner();
-async function init() {
-  const btn = document.getElementById('btn-login-el');
-  btn.disabled = true;
-  btn.textContent = 'Memuat data...';
+(async () => {
   await loadAll();
-  btn.disabled = false;
-  btn.textContent = 'Masuk →';
-}
-init();
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+})();
 </script>
 </body>
 </html>
