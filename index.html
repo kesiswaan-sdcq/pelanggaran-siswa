@@ -480,9 +480,10 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           <div class="fg full peln-row">
             <div class="fg">
               <label>Jenis Pelanggaran (Pasal 40)</label>
-              <select class="inp" id="inp-peln" onchange="onPelnChange()">
-                <option value="">— Pilih Pelanggaran —</option>
-              </select>
+              <div class="search-wrap">
+                <input class="search-input" id="inp-peln-search" placeholder="Ketik jenis pelanggaran..." autocomplete="off" oninput="onPelnInput()" onfocus="onPelnFocus()" onblur="onPelnBlur()" onkeydown="onPelnKeydown(event)">
+                <div class="dropdown-list" id="peln-dd"></div>
+              </div>
             </div>
             <div class="fg">
               <label>Poin</label>
@@ -894,16 +895,70 @@ function setupKelasDropdown() {
 }
 
 function setupPelnDropdown() {
-  const sel = document.getElementById('inp-peln');
-  const groups = { ringan:[], sedang:[], berat:[] };
-  PELN_LIST.forEach(([label,poin,kat]) => groups[kat].push([label,poin,kat]));
-  const gLabel = { ringan:'🟡 Ringan (2–5 poin)', sedang:'🟠 Sedang (10–25 poin)', berat:'🔴 Berat (30–100 poin)' };
-  sel.innerHTML = '<option value="">— Pilih Pelanggaran —</option>' +
-    ['ringan','sedang','berat'].map(kat =>
-      `<optgroup label="${gLabel[kat]}">${groups[kat].map(([l,p,k]) =>
-        `<option data-poin="${p}" data-kat="${k}">${l} (${p} poin)</option>`
-      ).join('')}</optgroup>`
+  // now using search input, nothing to setup
+}
+
+let selectedPeln = null; // { label, poin, kat }
+let pelnBlurTimer = null;
+
+function onPelnInput() {
+  selectedPeln = null;
+  document.getElementById('poin-display').textContent = '—';
+  document.getElementById('poin-display').className = 'poin-pill empty';
+  const q = document.getElementById('inp-peln-search').value;
+  renderPelnDD(q);
+}
+
+function onPelnFocus() {
+  clearTimeout(pelnBlurTimer);
+  const q = document.getElementById('inp-peln-search').value;
+  renderPelnDD(q);
+}
+
+function onPelnBlur() {
+  pelnBlurTimer = setTimeout(() => {
+    document.getElementById('peln-dd').classList.remove('open');
+  }, 200);
+}
+
+function onPelnKeydown(e) {
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    selectedPeln = null;
+    document.getElementById('poin-display').textContent = '—';
+    document.getElementById('poin-display').className = 'poin-pill empty';
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('peln-dd').classList.remove('open');
+  }
+}
+
+function renderPelnDD(q) {
+  const dd = document.getElementById('peln-dd');
+  const katIcon = { ringan:'🟡', sedang:'🟠', berat:'🔴' };
+  let filtered = q
+    ? PELN_LIST.filter(([label]) => fuzzyMatch(label, q))
+    : PELN_LIST;
+
+  if (!filtered.length) {
+    dd.innerHTML = '<div class="dd-empty">Tidak ditemukan</div>';
+  } else {
+    dd.innerHTML = filtered.slice(0,20).map(([label,poin,kat]) =>
+      `<div class="dd-item" onmousedown="pilihPeln('${label.replace(/'/g,"\'")}',${poin},'${kat}')">
+        <span>${katIcon[kat]} ${highlight(label, q||'')}</span>
+        <span class="dd-kelas" style="font-weight:700;color:${poin>=30?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin} poin</span>
+      </div>`
     ).join('');
+  }
+  dd.classList.add('open');
+}
+
+function pilihPeln(label, poin, kat) {
+  selectedPeln = { label, poin, kat };
+  document.getElementById('inp-peln-search').value = label;
+  document.getElementById('peln-dd').classList.remove('open');
+  const el = document.getElementById('poin-display');
+  el.textContent = poin + ' poin';
+  el.className = 'poin-pill ' + kat;
 }
 
 // ============================================================
@@ -1026,22 +1081,20 @@ function onPelnChange() {
 async function simpan() {
   const kelas = document.getElementById('inp-kelas').value;
   const nama = document.getElementById('inp-siswa').value.trim() || selectedSiswa;
-  const sel = document.getElementById('inp-peln');
-  const opt = sel.options[sel.selectedIndex];
   const tgl = document.getElementById('inp-tgl').value;
   const guru = document.getElementById('inp-guru').value.trim();
   const ket = document.getElementById('inp-ket').value.trim();
 
-  if (!kelas || !nama || !opt?.dataset?.poin || !tgl) {
+  if (!kelas || !nama || !selectedPeln || !tgl) {
     toast('Harap isi: Kelas, Nama, Pelanggaran, dan Tanggal!', 'error'); return;
   }
 
   const entry = {
     id: Date.now().toString(),
     tanggal: tgl, nama, kelas,
-    pelanggaran: sel.value.replace(/ \(\d+ poin\)$/, ''),
-    kategori: opt.dataset.kat,
-    poin: parseInt(opt.dataset.poin),
+    pelanggaran: selectedPeln.label,
+    kategori: selectedPeln.kat,
+    poin: selectedPeln.poin,
     guru, ket
   };
 
@@ -1076,11 +1129,12 @@ async function simpan() {
 
   // Reset form
   document.getElementById('inp-siswa').value = '';
-  document.getElementById('inp-peln').value = '';
+  document.getElementById('inp-peln-search').value = '';
   document.getElementById('inp-ket').value = '';
   document.getElementById('poin-display').textContent = '—';
   document.getElementById('poin-display').className = 'poin-pill empty';
   selectedSiswa = '';
+  selectedPeln = null;
   btn.disabled = false; btn.innerHTML = '💾 Simpan Pelanggaran';
 
   renderAll();
