@@ -1361,9 +1361,12 @@ function toast(msg, type='') {
 // ============================================================
 checkConfigBanner();
 async function init() {
-  showLoading("Memuat data...");
+  const btn = document.getElementById('btn-login-el');
+  btn.disabled = true;
+  btn.textContent = 'Memuat data...';
   await loadAll();
-  hideLoading();
+  btn.disabled = false;
+  btn.textContent = 'Masuk →';
 }
 init();
 </script>
