@@ -472,7 +472,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           <div class="fg">
             <label>Nama Siswa</label>
             <div class="search-wrap">
-              <input class="search-input" id="inp-siswa" placeholder="Ketik nama siswa..." autocomplete="off" oninput="onSiswaInput()" onfocus="onSiswaFocus()" onblur="onSiswaBlur()">
+              <input class="search-input" id="inp-siswa" placeholder="Ketik nama siswa..." autocomplete="off" oninput="onSiswaInput()" onfocus="onSiswaFocus()" onblur="onSiswaBlur()" onkeydown="onSiswaKeydown(event)">
               <div class="dropdown-list" id="siswa-dd"></div>
             </div>
           </div>
@@ -974,6 +974,17 @@ function onSiswaBlur() {
   ddBlurTimer = setTimeout(() => {
     document.getElementById('siswa-dd').classList.remove('open');
   }, 200);
+}
+
+function onSiswaKeydown(e) {
+  // Allow backspace and delete to clear selection
+  if (e.key === 'Backspace' || e.key === 'Delete') {
+    selectedSiswa = '';
+  }
+  // Close dropdown on Escape
+  if (e.key === 'Escape') {
+    document.getElementById('siswa-dd').classList.remove('open');
+  }
 }
 
 function renderDD(list, q) {
