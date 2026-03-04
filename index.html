@@ -221,7 +221,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 /* ========== STATS ========== */
 .stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
 @media(max-width:600px) { .stats-grid { grid-template-columns: repeat(2,1fr); } }
-.stat-card { background: white; border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+.stat-card { background: white; border-radius: var(--radius); padding: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); text-align: center; }
 .stat-card .num { font-size: 28px; font-weight: 800; line-height: 1; font-family: 'Courier New', Courier, monospace; }
 .stat-card .lbl { font-size: 11px; color: var(--slate); margin-top: 4px; font-weight: 600; }
 .stat-card.c-hijau .num { color: var(--hijau); }
@@ -313,7 +313,11 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <label>Password</label>
       <div style="position:relative">
         <input type="password" id="pwd" placeholder="Masukkan password..." autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding-right:44px">
-        <button type="button" onclick="togglePwd()" id="btn-eye" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:#94a3b8;padding:0;line-height:1">👁</button>
+        <button type="button" onclick="togglePwd()" id="btn-eye" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:#94a3b8;padding:0;line-height:1">
+          <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
       </div>
     </div>
     <button class="btn-login" onclick="doLogin()" id="btn-login-el">Masuk</button>
@@ -624,15 +628,12 @@ async function loadAll() {
 function togglePwd() {
   const inp = document.getElementById('pwd');
   const btn = document.getElementById('btn-eye');
-  if (inp.type === 'password') {
-    inp.type = 'text';
-    btn.style.opacity = '1';
-    btn.style.color = 'var(--hijau)';
-  } else {
-    inp.type = 'password';
-    btn.style.opacity = '0.5';
-    btn.style.color = '#94a3b8';
-  }
+  const showing = inp.type === 'text';
+  inp.type = showing ? 'password' : 'text';
+  btn.style.color = showing ? '#94a3b8' : 'var(--hijau)';
+  document.getElementById('eye-icon').innerHTML = showing
+    ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
+    : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
 }
 function doLogin() {
   const usr = document.getElementById('usr').value.trim();
