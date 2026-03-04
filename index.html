@@ -54,6 +54,7 @@ body {
   50%  { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
 #login-screen::before {
   content: '';
   position: absolute;
@@ -597,6 +598,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           </div>
           <button class="btn-primary" onclick="generateLaporan()" style="padding:9px 18px">📊 Generate</button>
           <button class="btn-sec" onclick="window.print()">🖨️ Cetak/PDF</button>
+          <button class="btn-sec" onclick="downloadExcel()" id="btn-excel">📥 Download Excel</button>
         </div>
         <div id="lap-result"></div>
       </div>
@@ -1255,10 +1257,14 @@ function generateLaporan() {
 
   document.getElementById('lap-result').innerHTML = `
     <div style="border:1.5px solid var(--border);border-radius:12px;padding:28px;background:white">
-      <div style="text-align:center;border-bottom:2px solid var(--gelap);padding-bottom:16px;margin-bottom:20px">
-        <div style="font-size:12px;color:var(--slate);font-weight:700;margin-bottom:4px;letter-spacing:0.05em">LAPORAN POIN PELANGGARAN SISWA</div>
-        <div style="font-size:18px;font-weight:800">SDIT CQ DEPOK</div>
-        <div style="font-size:12px;color:var(--slate);margin-top:4px">Periode: ${per} &nbsp;·&nbsp; Dicetak: ${tgl}</div>
+      <div style="border-bottom:2px solid var(--gelap);padding-bottom:16px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
+        <img src="logo_sd.png" style="width:70px;height:70px;object-fit:contain;flex-shrink:0">
+        <div style="flex:1;text-align:center">
+          <div style="font-size:11px;color:var(--slate);font-weight:700;margin-bottom:3px;letter-spacing:0.06em;text-transform:uppercase">Laporan Pelanggaran Siswa</div>
+          <div style="font-size:17px;font-weight:800;color:var(--gelap)">SD Islam Tahfizh Cahaya Qur'an</div>
+          <div style="font-size:12px;color:var(--slate);margin-top:4px">Periode: ${per} &nbsp;·&nbsp; Dicetak: ${tgl}</div>
+        </div>
+        <div style="width:70px;flex-shrink:0"></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">
         ${[['Siswa Tercatat',siswa.length,'var(--hijau)'],['Total Pelanggaran',data.length,'var(--gelap)'],
@@ -1373,6 +1379,90 @@ function toast(msg, type='') {
   document.getElementById('loading').style.display = 'none';
   document.getElementById('login-screen').style.display = 'flex';
 })();
+</script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+function downloadExcel() {
+  const dari   = document.getElementById('lap-dari').value;
+  const sampai = document.getElementById('lap-sampai').value;
+
+  if (!dari || !sampai) { toast('Pilih periode dulu!', 'error'); return; }
+
+  // Group data by kelas
+  let data = ALL_DATA.filter(d => (!dari||d.tanggal>=dari) && (!sampai||d.tanggal<=sampai));
+
+  const kelasList = SESSION.role === 'walas' ? [SESSION.kelas] : [...new Set(data.map(d=>d.kelas))].sort();
+
+  const wb = XLSX.utils.book_new();
+  const bulan = new Date(dari).toLocaleDateString('id-ID',{month:'long',year:'numeric'});
+
+  kelasList.forEach(kelas => {
+    const kelasData = data.filter(d => d.kelas === kelas);
+    // Get all unique students in this kelas
+    const allSiswaInKelas = [...new Set([
+      ...SISWA_LIST.filter(s=>s.kelas===kelas).map(s=>s.nama),
+      ...kelasData.map(d=>d.nama)
+    ])].sort();
+
+    // Find walas for this kelas
+    const waliKelas = ALL_USERS.find(u => u.role==='walas' && u.kelas===kelas);
+    const namaWalas = waliKelas ? waliKelas.nama : '';
+
+    const wsData = [];
+
+    // Header rows
+    wsData.push(['TAHUN PELAJARAN 2025 - 2026']);
+    wsData.push([]);
+    wsData.push(['Satuan Pendidikan', '', 'SD Islam Tahfizh Cahaya Qur'an']);
+    wsData.push(['Semester', '', 'II (Dua)']);
+    wsData.push(['Kelas', '', kelas]);
+    wsData.push(['Nama Guru', '', namaWalas]);
+    wsData.push([]);
+
+    // Table header
+    wsData.push(['No', 'Nama Siswa', 'Ringan', 'Sedang', 'Berat', 'Total Poin Pelanggaran', 'Catatan']);
+
+    // Data rows — semua siswa di kelas ini
+    allSiswaInKelas.forEach((nama, idx) => {
+      const siswaData = kelasData.filter(d => d.nama === nama);
+      const ringan = siswaData.filter(d=>d.kategori==='ringan').length;
+      const sedang  = siswaData.filter(d=>d.kategori==='sedang').length;
+      const berat   = siswaData.filter(d=>d.kategori==='berat').length;
+      const totalPoin = siswaData.reduce((s,d)=>s+d.poin,0);
+      wsData.push([idx+1, nama, ringan||'', sedang||'', berat||'', totalPoin||'', '']);
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+    // Column widths
+    ws['!cols'] = [
+      {wch:5}, {wch:30}, {wch:8}, {wch:8}, {wch:8}, {wch:22}, {wch:25}
+    ];
+
+    // Merge title row
+    ws['!merges'] = [
+      {s:{r:0,c:0}, e:{r:0,c:6}}, // title
+      {s:{r:2,c:0}, e:{r:2,c:1}}, // Satuan Pendidikan label
+      {s:{r:2,c:2}, e:{r:2,c:6}}, // Satuan Pendidikan value
+      {s:{r:3,c:0}, e:{r:3,c:1}},
+      {s:{r:3,c:2}, e:{r:3,c:6}},
+      {s:{r:4,c:0}, e:{r:4,c:1}},
+      {s:{r:4,c:2}, e:{r:4,c:6}},
+      {s:{r:5,c:0}, e:{r:5,c:1}},
+      {s:{r:5,c:2}, e:{r:5,c:6}},
+    ];
+
+    // Safe sheet name (max 31 chars)
+    const sheetName = kelas.replace(/[\/*?:\[\]]/g,'').slice(0,31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  const fileName = 'Laporan_Pelanggaran_' + (dari.slice(0,7)) + '.xlsx';
+  XLSX.writeFile(wb, fileName);
+  toast('✅ File Excel berhasil didownload!', 'sukses');
+}
 </script>
 </body>
 </html>
