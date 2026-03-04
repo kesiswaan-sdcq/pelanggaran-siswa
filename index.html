@@ -197,7 +197,7 @@ select.inp:focus, textarea.inp:focus, input.inp:focus { border-color: var(--hija
 .toast.error { background: var(--merah); }
 
 /* ========== TABLE ========== */
-.filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+.filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
 .filter-bar input, .filter-bar select { padding: 8px 12px; border: 1.5px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; outline: none; background: white; color: var(--gelap); }
 .filter-bar input:focus, .filter-bar select:focus { border-color: var(--hijau-mid); }
 .filter-bar input { flex: 1; min-width: 160px; }
@@ -247,10 +247,24 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 .t4 { background: #450a0a; color: #fca5a5; border-color: #b91c1c; }
 .t5 { background: #1a0000; color: #ff6b6b; border-color: #7f1d1d; }
 
+/* ========== REKAP TOOLBAR ========== */
+.rekap-toolbar {
+  background: white; border-radius: var(--radius); padding: 16px 20px;
+  box-shadow: var(--shadow); border: 1px solid var(--border);
+  margin-bottom: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.rekap-toolbar label { font-size: 12px; font-weight: 700; color: var(--slate); white-space: nowrap; }
+
 /* ========== LAPORAN ========== */
 .lap-toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
 .btn-sec { padding: 9px 16px; background: white; color: var(--gelap); border: 1.5px solid var(--border); border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
 .btn-sec:hover { border-color: var(--hijau-mid); color: var(--hijau); }
+.btn-excel {
+  padding: 9px 16px; background: #16a34a; color: white; border: none;
+  border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+}
+.btn-excel:hover { background: #15803d; transform: translateY(-1px); }
 
 /* ========== ADMIN ========== */
 .user-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
@@ -268,7 +282,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 #loading .big-spin { width: 44px; height: 44px; border: 3px solid var(--hijau-light); border-top-color: var(--hijau); border-radius: 50%; animation: spin 0.8s linear infinite; }
 #loading p { font-size: 14px; color: var(--slate); font-weight: 600; }
 @media print {
-  header, .nav-tabs, .lap-toolbar, .filter-bar, .btn-del, .btn-logout { display: none !important; }
+  header, .nav-tabs, .lap-toolbar, .filter-bar, .btn-del, .btn-logout, .rekap-toolbar { display: none !important; }
   body { background: white; }
   .card { box-shadow: none; border: 1px solid #ddd; }
 }
@@ -371,6 +385,17 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     <!-- TAB REKAP -->
     <div class="tab-pane" id="tab-rekap">
       <div class="stats-grid" id="stats-rekap"></div>
+
+      <!-- TOOLBAR DOWNLOAD EXCEL DI REKAP -->
+      <div class="rekap-toolbar" id="rekap-excel-bar">
+        <label>📥 Download Laporan Excel:</label>
+        <select class="inp" id="rekap-bulan" style="width:auto;min-width:160px">
+          <option value="">— Pilih Bulan —</option>
+        </select>
+        <select class="inp" id="rekap-tahun" style="width:auto;min-width:100px"></select>
+        <button class="btn-excel" onclick="downloadExcelRekap()">📊 Download Excel</button>
+      </div>
+
       <div class="card">
         <div class="card-head">📋 Riwayat Pelanggaran</div>
         <div class="filter-bar">
@@ -414,7 +439,6 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           </div>
           <button class="btn-primary" onclick="generateLaporan()" style="padding:9px 18px">📊 Generate</button>
           <button class="btn-sec" onclick="window.print()">🖨️ Cetak/PDF</button>
-          <button class="btn-sec" onclick="downloadExcel()">📥 Download Excel</button>
         </div>
         <div id="lap-result"></div>
       </div>
@@ -533,6 +557,8 @@ const KELAS_LIST = [
   '6A Banin','6B Banin','6A Banat','6B Banat'
 ];
 
+const BULAN_NAMA = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
 const BASE = 'https://sheets.googleapis.com/v4/spreadsheets';
 async function sheetsGet(range) {
   const r = await fetch(`${BASE}/${CFG.sheetId}/values/${encodeURIComponent(range)}?key=${CFG.apiKey}`);
@@ -616,6 +642,17 @@ function initApp() {
   const now = new Date();
   document.getElementById('lap-dari').value   = `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
   document.getElementById('lap-sampai').value = today();
+
+  // Isi dropdown bulan & tahun di rekap
+  const bulanSel = document.getElementById('rekap-bulan');
+  bulanSel.innerHTML = '<option value="">— Pilih Bulan —</option>' +
+    BULAN_NAMA.map((b,i)=>`<option value="${pad(i+1)}">${b}</option>`).join('');
+  bulanSel.value = pad(now.getMonth()+1);
+  const tahunSel = document.getElementById('rekap-tahun');
+  const tahunNow = now.getFullYear();
+  tahunSel.innerHTML = [tahunNow-1, tahunNow, tahunNow+1].map(t=>`<option value="${t}" ${t===tahunNow?'selected':''}>${t}</option>`).join('');
+
+  // Sembunyikan toolbar excel untuk walas jika tidak perlu — sebenarnya walas juga bisa download kelasnya
   renderAll();
 }
 
@@ -769,7 +806,67 @@ async function hapus(id) {
   renderAll();toast('Data dihapus','sukses');
 }
 
-// LAPORAN CETAK
+// DOWNLOAD EXCEL DARI TAB REKAP (filter per bulan)
+function downloadExcelRekap() {
+  const bulan = document.getElementById('rekap-bulan').value;
+  const tahun = document.getElementById('rekap-tahun').value;
+  if (!bulan || !tahun) { toast('Pilih bulan dan tahun dulu!', 'error'); return; }
+
+  const prefix = `${tahun}-${bulan}`;
+  let data = getDataForRole().filter(d => d.tanggal.startsWith(prefix));
+
+  if (!data.length) { toast('Tidak ada data pada bulan tersebut', 'error'); return; }
+
+  const namaBulan = BULAN_NAMA[parseInt(bulan)-1];
+  const kelasList = SESSION.role==='walas' ? [SESSION.kelas] : [...new Set(data.map(d=>d.kelas))].sort();
+
+  const wb = XLSX.utils.book_new();
+  kelasList.forEach(kelas => {
+    const kd = data.filter(d => d.kelas === kelas);
+    const allSiswa = [...new Set([
+      ...SISWA_LIST.filter(s=>s.kelas===kelas).map(s=>s.nama),
+      ...kd.map(d=>d.nama)
+    ])].sort();
+    const wali = ALL_USERS.find(u => u.role==='walas' && u.kelas===kelas);
+
+    const wsData = [
+      ['TAHUN PELAJARAN 2025 - 2026'],
+      [],
+      ['Satuan Pendidikan', '', 'SD Islam Tahfizh Cahaya Qur\'an'],
+      ['Semester', '', 'II (Dua)'],
+      ['Bulan', '', namaBulan + ' ' + tahun],
+      ['Kelas', '', kelas],
+      ['Nama Guru', '', wali ? wali.nama : ''],
+      [],
+      ['No', 'Nama Siswa', 'Ringan', 'Sedang', 'Berat', 'Total Poin Pelanggaran', 'Catatan'],
+      ...allSiswa.map((nama, idx) => {
+        const sd = kd.filter(d => d.nama === nama);
+        const ringan = sd.filter(d=>d.kategori==='ringan').length;
+        const sedang = sd.filter(d=>d.kategori==='sedang').length;
+        const berat  = sd.filter(d=>d.kategori==='berat').length;
+        const total  = sd.reduce((s,d)=>s+d.poin, 0);
+        return [idx+1, nama, ringan||'', sedang||'', berat||'', total||'', ''];
+      })
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [{wch:5},{wch:32},{wch:10},{wch:10},{wch:10},{wch:24},{wch:28}];
+    ws['!merges'] = [
+      {s:{r:0,c:0},e:{r:0,c:6}},
+      {s:{r:2,c:0},e:{r:2,c:1}},{s:{r:2,c:2},e:{r:2,c:6}},
+      {s:{r:3,c:0},e:{r:3,c:1}},{s:{r:3,c:2},e:{r:3,c:6}},
+      {s:{r:4,c:0},e:{r:4,c:1}},{s:{r:4,c:2},e:{r:4,c:6}},
+      {s:{r:5,c:0},e:{r:5,c:1}},{s:{r:5,c:2},e:{r:5,c:6}},
+      {s:{r:6,c:0},e:{r:6,c:1}},{s:{r:6,c:2},e:{r:6,c:6}},
+    ];
+    XLSX.utils.book_append_sheet(wb, ws, kelas.replace(/[\\/*?:\[\]]/g,'').slice(0,31));
+  });
+
+  XLSX.writeFile(wb, `Laporan_Pelanggaran_${namaBulan}_${tahun}.xlsx`);
+  toast('✅ File Excel berhasil didownload!', 'sukses');
+}
+
+// LAPORAN CETAK (tab laporan)
 function generateLaporan() {
   const dari=document.getElementById('lap-dari').value;
   const sampai=document.getElementById('lap-sampai').value;
@@ -804,41 +901,6 @@ function generateLaporan() {
         <div><div style="font-size:12px;color:var(--slate);margin-bottom:4px">______________, ${tgl}</div><div style="font-size:12px;color:var(--slate);margin-bottom:40px">Kabid Kesiswaan,</div><div style="font-size:12px;font-weight:700;border-top:1px solid var(--gelap);padding-top:4px">( _________________ )</div></div>
       </div>
     </div>`;
-}
-
-// DOWNLOAD EXCEL
-function downloadExcel() {
-  const dari=document.getElementById('lap-dari').value;
-  const sampai=document.getElementById('lap-sampai').value;
-  if(!dari||!sampai){toast('Pilih periode dulu!','error');return;}
-  let data=ALL_DATA.filter(d=>(!dari||d.tanggal>=dari)&&(!sampai||d.tanggal<=sampai));
-  const kelasList=SESSION.role==='walas'?[SESSION.kelas]:[...new Set(data.map(d=>d.kelas))].sort();
-  const wb=XLSX.utils.book_new();
-  kelasList.forEach(kelas=>{
-    const kd=data.filter(d=>d.kelas===kelas);
-    const allSiswa=[...new Set([...SISWA_LIST.filter(s=>s.kelas===kelas).map(s=>s.nama),...kd.map(d=>d.nama)])].sort();
-    const waliKelas=ALL_USERS.find(u=>u.role==='walas'&&u.kelas===kelas);
-    const wsData=[
-      ['TAHUN PELAJARAN 2025 - 2026'],
-      [],
-      ['Satuan Pendidikan','','SD Islam Tahfizh Cahaya Qur\'an'],
-      ['Semester','','II (Dua)'],
-      ['Kelas','',kelas],
-      ['Nama Guru','',waliKelas?waliKelas.nama:''],
-      [],
-      ['No','Nama Siswa','Ringan','Sedang','Berat','Total Poin Pelanggaran','Catatan'],
-      ...allSiswa.map((nama,idx)=>{
-        const sd=kd.filter(d=>d.nama===nama);
-        return [idx+1,nama,sd.filter(d=>d.kategori==='ringan').length||'',sd.filter(d=>d.kategori==='sedang').length||'',sd.filter(d=>d.kategori==='berat').length||'',sd.reduce((s,d)=>s+d.poin,0)||'',''];
-      })
-    ];
-    const ws=XLSX.utils.aoa_to_sheet(wsData);
-    ws['!cols']=[{wch:5},{wch:32},{wch:10},{wch:10},{wch:10},{wch:24},{wch:28}];
-    ws['!merges']=[{s:{r:0,c:0},e:{r:0,c:6}},{s:{r:2,c:0},e:{r:2,c:1}},{s:{r:2,c:2},e:{r:2,c:6}},{s:{r:3,c:0},e:{r:3,c:1}},{s:{r:3,c:2},e:{r:3,c:6}},{s:{r:4,c:0},e:{r:4,c:1}},{s:{r:4,c:2},e:{r:4,c:6}},{s:{r:5,c:0},e:{r:5,c:1}},{s:{r:5,c:2},e:{r:5,c:6}}];
-    XLSX.utils.book_append_sheet(wb,ws,kelas.replace(/[\\/*?:\[\]]/g,'').slice(0,31));
-  });
-  XLSX.writeFile(wb,'Laporan_Pelanggaran_'+dari.slice(0,7)+'.xlsx');
-  toast('✅ File Excel berhasil didownload!','sukses');
 }
 
 function saveConfig() {
