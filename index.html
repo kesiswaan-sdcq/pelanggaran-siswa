@@ -1360,7 +1360,12 @@ function toast(msg, type='') {
 // INIT
 // ============================================================
 checkConfigBanner();
-useLocalData(); // Load local data dulu (tidak perlu login untuk load)
+async function init() {
+  showLoading("Memuat data...");
+  await loadAll();
+  hideLoading();
+}
+init();
 </script>
 </body>
 </html>
