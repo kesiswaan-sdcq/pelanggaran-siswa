@@ -453,6 +453,25 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         <div id="user-list" style="margin-top:20px"></div>
       </div>
       <div class="card">
+        <div class="card-head">📅 Pengaturan Tahun Pelajaran</div>
+        <p style="font-size:13px;color:var(--slate);margin-bottom:16px">Dipakai otomatis di semua laporan Excel yang didownload.</p>
+        <div class="form-grid">
+          <div class="fg">
+            <label>Tahun Pelajaran</label>
+            <input type="text" class="inp" id="cfg-tapel" placeholder="cth: 2025 / 2026">
+          </div>
+          <div class="fg">
+            <label>Semester</label>
+            <select class="inp" id="cfg-semester">
+              <option value="I (Satu)">I (Satu)</option>
+              <option value="II (Dua)">II (Dua)</option>
+            </select>
+          </div>
+        </div>
+        <br>
+        <button class="btn-primary" onclick="saveTapel()" style="width:auto;padding:10px 20px">💾 Simpan Pengaturan</button>
+      </div>
+      <div class="card">
         <div class="card-head">⚙️ Konfigurasi API</div>
         <div class="form-grid">
           <div class="fg full"><label>Google Sheets ID</label><input type="text" class="inp" id="cfg-sheet-id"></div>
@@ -472,7 +491,9 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 const DEFAULT_CFG = {
   sheetId: '1Fqes4QGVLhJONeRknyg8GKc5dZalXsNwkLIjesXLw2E',
   apiKey:  'AIzaSyCs8CZiA6ODqXW8eKk46L0ebN6z97nQVAc',
-  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbwOkfwgQklQixUgzTIBlfxUu5VuAhtEFkZmkEhJasbSYCiDZQ8wLkhIZDRUGD146sa-qg/exec'
+  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbwOkfwgQklQixUgzTIBlfxUu5VuAhtEFkZmkEhJasbSYCiDZQ8wLkhIZDRUGD146sa-qg/exec',
+  tapel: '2025 / 2026',
+  semester: 'II (Dua)'
 };
 let CFG = Object.assign({}, DEFAULT_CFG, JSON.parse(localStorage.getItem('poin_cfg') || '{}'));
 let SESSION=null, ALL_DATA=[], ALL_USERS=[], SISWA_LIST=[];
@@ -639,6 +660,8 @@ function initApp() {
   document.getElementById('cfg-sheet-id').value   = CFG.sheetId||'';
   document.getElementById('cfg-api-key').value    = CFG.apiKey||'';
   document.getElementById('cfg-script-url').value = CFG.appsScriptUrl||'';
+  document.getElementById('cfg-tapel').value = CFG.tapel||'2025 / 2026';
+  document.getElementById('cfg-semester').value = CFG.semester||'II (Dua)';
   const now = new Date();
   document.getElementById('lap-dari').value   = `${now.getFullYear()}-${pad(now.getMonth()+1)}-01`;
   document.getElementById('lap-sampai').value = today();
@@ -830,10 +853,10 @@ function downloadExcelRekap() {
     const wali = ALL_USERS.find(u => u.role==='walas' && u.kelas===kelas);
 
     const wsData = [
-      ['TAHUN PELAJARAN 2025 - 2026'],
+      ['TAHUN PELAJARAN ' + (CFG.tapel||'2025 / 2026')],
       [],
       ['Satuan Pendidikan', '', 'SD Islam Tahfizh Cahaya Qur\'an'],
-      ['Semester', '', 'II (Dua)'],
+      ['Semester', '', CFG.semester||'II (Dua)'],
       ['Bulan', '', namaBulan + ' ' + tahun],
       ['Kelas', '', kelas],
       ['Nama Guru', '', wali ? wali.nama : ''],
@@ -903,6 +926,12 @@ function generateLaporan() {
     </div>`;
 }
 
+function saveTapel() {
+  CFG.tapel=document.getElementById('cfg-tapel').value.trim()||'2025 / 2026';
+  CFG.semester=document.getElementById('cfg-semester').value;
+  localStorage.setItem('poin_cfg',JSON.stringify(CFG));
+  toast('✅ Pengaturan tahun pelajaran disimpan!','sukses');
+}
 function saveConfig() {
   CFG.sheetId=document.getElementById('cfg-sheet-id').value.trim();
   CFG.apiKey=document.getElementById('cfg-api-key').value.trim();
