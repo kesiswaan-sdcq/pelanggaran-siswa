@@ -42,10 +42,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #0d3d2a 0%, #15643b 35%, #1a8a5a 60%, #0e7490 100%);
+  background: linear-gradient(135deg, #0d3d2a, #15643b, #1a8a5a, #0e7490, #15643b, #0d3d2a);
+  background-size: 400% 400%;
+  animation: gradientMove 12s ease infinite;
   padding: 20px;
   position: relative;
   overflow: hidden;
+}
+@keyframes gradientMove {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 #login-screen::before {
   content: '';
@@ -1369,4 +1376,3 @@ function toast(msg, type='') {
 </script>
 </body>
 </html>
-
