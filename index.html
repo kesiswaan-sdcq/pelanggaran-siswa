@@ -311,7 +311,10 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
     </div>
     <div class="field">
       <label>Password</label>
-      <input type="password" id="pwd" placeholder="Masukkan password..." autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="position:relative">
+        <input type="password" id="pwd" placeholder="Masukkan password..." autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding-right:44px">
+        <button type="button" onclick="togglePwd()" id="btn-eye" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:18px;color:#94a3b8;padding:0;line-height:1">👁</button>
+      </div>
     </div>
     <button class="btn-login" onclick="doLogin()" id="btn-login-el">Masuk</button>
     <div class="login-err" id="login-err">Username atau password salah</div>
@@ -393,7 +396,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           <option value="">— Pilih Bulan —</option>
         </select>
         <select class="inp" id="rekap-tahun" style="width:auto;min-width:100px"></select>
-        <button class="btn-excel" onclick="downloadExcelRekap()">📊 Download Excel</button>
+        <button class="btn-excel" onclick="downloadExcelRekap()" id="btn-excel">📊 Download Excel (Formatted)</button>
       </div>
 
       <div class="card">
@@ -491,7 +494,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 const DEFAULT_CFG = {
   sheetId: '1Fqes4QGVLhJONeRknyg8GKc5dZalXsNwkLIjesXLw2E',
   apiKey:  'AIzaSyCs8CZiA6ODqXW8eKk46L0ebN6z97nQVAc',
-  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbwOkfwgQklQixUgzTIBlfxUu5VuAhtEFkZmkEhJasbSYCiDZQ8wLkhIZDRUGD146sa-qg/exec',
+  appsScriptUrl: 'https://script.google.com/macros/s/AKfycbx0jnneZm1hERyenm7Zq2qKcKm9BK1pD7RuLjfb4RXmmnUCR2yKsS4Jk4oiqxfKIGcNKA/exec',
   tapel: '2025 / 2026',
   semester: 'II (Dua)'
 };
@@ -617,6 +620,20 @@ async function loadAll() {
   }
 }
 
+
+function togglePwd() {
+  const inp = document.getElementById('pwd');
+  const btn = document.getElementById('btn-eye');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    btn.style.opacity = '1';
+    btn.style.color = 'var(--hijau)';
+  } else {
+    inp.type = 'password';
+    btn.style.opacity = '0.5';
+    btn.style.color = '#94a3b8';
+  }
+}
 function doLogin() {
   const usr = document.getElementById('usr').value.trim();
   const pwd = document.getElementById('pwd').value;
@@ -829,8 +846,8 @@ async function hapus(id) {
   renderAll();toast('Data dihapus','sukses');
 }
 
-// DOWNLOAD EXCEL DARI TAB REKAP (filter per bulan)
-function downloadExcelRekap() {
+// DOWNLOAD EXCEL DARI TAB REKAP - via Apps Script (formatted)
+async function downloadExcelRekap() {
   const bulan = document.getElementById('rekap-bulan').value;
   const tahun = document.getElementById('rekap-tahun').value;
   if (!bulan || !tahun) { toast('Pilih bulan dan tahun dulu!', 'error'); return; }
@@ -843,51 +860,56 @@ function downloadExcelRekap() {
   const namaBulan = BULAN_NAMA[parseInt(bulan)-1];
   const kelasList = SESSION.role==='walas' ? [SESSION.kelas] : [...new Set(data.map(d=>d.kelas))].sort();
 
-  const wb = XLSX.utils.book_new();
-  kelasList.forEach(kelas => {
+  // Susun data per kelas
+  const kelasPayload = kelasList.map(kelas => {
     const kd = data.filter(d => d.kelas === kelas);
     const allSiswa = [...new Set([
       ...SISWA_LIST.filter(s=>s.kelas===kelas).map(s=>s.nama),
       ...kd.map(d=>d.nama)
     ])].sort();
     const wali = ALL_USERS.find(u => u.role==='walas' && u.kelas===kelas);
-
-    const wsData = [
-      ['TAHUN PELAJARAN ' + (CFG.tapel||'2025 / 2026')],
-      [],
-      ['Satuan Pendidikan', '', 'SD Islam Tahfizh Cahaya Qur\'an'],
-      ['Semester', '', CFG.semester||'II (Dua)'],
-      ['Bulan', '', namaBulan + ' ' + tahun],
-      ['Kelas', '', kelas],
-      ['Nama Guru', '', wali ? wali.nama : ''],
-      [],
-      ['No', 'Nama Siswa', 'Ringan', 'Sedang', 'Berat', 'Total Poin Pelanggaran', 'Catatan'],
-      ...allSiswa.map((nama, idx) => {
+    return {
+      kelas,
+      wali: wali ? wali.nama : '',
+      siswa: allSiswa.map(nama => {
         const sd = kd.filter(d => d.nama === nama);
-        const ringan = sd.filter(d=>d.kategori==='ringan').length;
-        const sedang = sd.filter(d=>d.kategori==='sedang').length;
-        const berat  = sd.filter(d=>d.kategori==='berat').length;
-        const total  = sd.reduce((s,d)=>s+d.poin, 0);
-        return [idx+1, nama, ringan||'', sedang||'', berat||'', total||'', ''];
+        return {
+          nama,
+          ringan: sd.filter(d=>d.kategori==='ringan').length || 0,
+          sedang: sd.filter(d=>d.kategori==='sedang').length || 0,
+          berat:  sd.filter(d=>d.kategori==='berat').length  || 0,
+          total:  sd.reduce((s,d)=>s+d.poin, 0)
+        };
       })
-    ];
-
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    ws['!cols'] = [{wch:5},{wch:32},{wch:10},{wch:10},{wch:10},{wch:24},{wch:28}];
-    ws['!merges'] = [
-      {s:{r:0,c:0},e:{r:0,c:6}},
-      {s:{r:2,c:0},e:{r:2,c:1}},{s:{r:2,c:2},e:{r:2,c:6}},
-      {s:{r:3,c:0},e:{r:3,c:1}},{s:{r:3,c:2},e:{r:3,c:6}},
-      {s:{r:4,c:0},e:{r:4,c:1}},{s:{r:4,c:2},e:{r:4,c:6}},
-      {s:{r:5,c:0},e:{r:5,c:1}},{s:{r:5,c:2},e:{r:5,c:6}},
-      {s:{r:6,c:0},e:{r:6,c:1}},{s:{r:6,c:2},e:{r:6,c:6}},
-    ];
-    XLSX.utils.book_append_sheet(wb, ws, kelas.replace(/[\\/*?:\[\]]/g,'').slice(0,31));
+    };
   });
 
-  XLSX.writeFile(wb, `Laporan_Pelanggaran_${namaBulan}_${tahun}.xlsx`);
-  toast('✅ File Excel berhasil didownload!', 'sukses');
+  const btn = document.getElementById('btn-excel');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spin"></div> Membuat laporan...';
+
+  try {
+    const res = await scriptPost('exportExcel', {
+      namaBulan, tahun,
+      tapel: CFG.tapel || '2025 / 2026',
+      semester: CFG.semester || 'II (Dua)',
+      kelasList: kelasPayload
+    });
+    if (res.status === 'ok' && res.url) {
+      toast('✅ Laporan siap! Membuka Google Sheets...', 'sukses');
+      setTimeout(() => window.open(res.url, '_blank'), 800);
+    } else {
+      throw new Error(res.message || 'Gagal');
+    }
+  } catch(e) {
+    toast('❌ Gagal: ' + e.message, 'error');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '📊 Download Excel (Formatted)';
 }
+
+
 
 // LAPORAN CETAK (tab laporan)
 function generateLaporan() {
