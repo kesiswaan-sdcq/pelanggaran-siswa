@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Sistem Poin Pelanggaran SD</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
 
 :root {
   --hijau:       #15643b;
@@ -28,7 +28,7 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: Tahoma, Geneva, Verdana, sans-serif;
   background: #f8fafc;
   color: var(--gelap);
   min-height: 100vh;
@@ -228,7 +228,7 @@ select.inp:focus, textarea.inp:focus, input.inp:focus {
   padding: 10px 14px; border-radius: 10px;
   font-weight: 800; font-size: 16px; text-align: center;
   border: 1.5px solid; transition: all 0.3s;
-  font-family: 'DM Mono', monospace;
+  font-family: 'Courier New', Courier, monospace;
 }
 .poin-pill.empty { background: var(--slate-light); color: var(--slate); border-color: var(--border); }
 .poin-pill.ringan { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
@@ -304,7 +304,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   padding: 16px; border: 1px solid var(--border);
   box-shadow: var(--shadow);
 }
-.stat-card .num { font-size: 28px; font-weight: 800; line-height: 1; font-family: 'DM Mono', monospace; }
+.stat-card .num { font-size: 28px; font-weight: 800; line-height: 1; font-family: 'Courier New', Courier, monospace; }
 .stat-card .lbl { font-size: 11px; color: var(--slate); margin-top: 4px; font-weight: 600; }
 .stat-card.c-hijau .num { color: var(--hijau); }
 .stat-card.c-orange .num { color: var(--orange); }
@@ -325,7 +325,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 }
 .siswa-info .nama { font-weight: 700; font-size: 14px; }
 .siswa-info .meta { font-size: 11px; color: var(--slate); margin-top: 2px; }
-.siswa-poin { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 800; }
+.siswa-poin { margin-left: auto; font-family: 'Courier New', Courier, monospace; font-size: 22px; font-weight: 800; }
 .siswa-arrow { color: var(--slate); font-size: 12px; margin-left: 10px; transition: transform 0.2s; }
 .siswa-arrow.open { transform: rotate(180deg); }
 .siswa-body { display: none; border-top: 1px solid var(--border); background: white; }
@@ -456,18 +456,19 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
             </div>
           </div>
 
-          <div class="fg full peln-row">
-            <div class="fg">
-              <label>Jenis Pelanggaran (Pasal 40)</label>
-              <div class="search-wrap">
-                <input class="search-input" id="inp-peln-search" placeholder="Ketik jenis pelanggaran..." autocomplete="off"
-                  oninput="onPelnInput()" onfocus="onPelnFocus()" onblur="onPelnBlur()" onkeydown="onPelnKeydown(event)">
-                <div class="dropdown-list" id="peln-dd"></div>
-              </div>
+          <div class="fg full">
+            <label>Jenis Pelanggaran (Pasal 40) — bisa pilih lebih dari satu</label>
+            <div class="search-wrap">
+              <input class="search-input" id="inp-peln-search" placeholder="Ketik pelanggaran, pilih, lalu tambah lagi..." autocomplete="off"
+                oninput="onPelnInput()" onfocus="onPelnFocus()" onblur="onPelnBlur()" onkeydown="onPelnKeydown(event)">
+              <div class="dropdown-list" id="peln-dd"></div>
             </div>
-            <div class="fg">
-              <label>Poin</label>
-              <div class="poin-pill empty" id="poin-display">—</div>
+            <!-- Daftar pelanggaran yang sudah dipilih -->
+            <div id="peln-list" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
+            <!-- Total poin -->
+            <div id="poin-total-wrap" style="display:none;margin-top:8px;padding:10px 14px;border-radius:10px;background:var(--hijau-pale);border:1.5px solid var(--hijau-light);display:flex;align-items:center;justify-content:space-between">
+              <span style="font-weight:700;color:var(--hijau);font-size:13px">Total Poin</span>
+              <span id="poin-display" style="font-family:'Courier New',monospace;font-weight:800;font-size:18px;color:var(--hijau)">0 poin</span>
             </div>
           </div>
 
@@ -898,14 +899,12 @@ function pilihSiswa(nama) {
 }
 
 // ============================================================
-// FUZZY PELANGGARAN SEARCH
+// FUZZY PELANGGARAN SEARCH — MULTI SELECT
 // ============================================================
-let selectedPeln = null;
+let pelnList = []; // array { label, poin, kat }
 let pelnBlurTimer = null;
 
 function onPelnInput() {
-  selectedPeln = null;
-  setPoinDisplay(null);
   renderPelnDD(document.getElementById('inp-peln-search').value);
 }
 function onPelnFocus() {
@@ -916,36 +915,61 @@ function onPelnBlur() {
   pelnBlurTimer = setTimeout(() => document.getElementById('peln-dd').classList.remove('open'), 200);
 }
 function onPelnKeydown(e) {
-  if (e.key === 'Backspace' || e.key === 'Delete') { selectedPeln = null; setPoinDisplay(null); }
   if (e.key === 'Escape') document.getElementById('peln-dd').classList.remove('open');
 }
 function renderPelnDD(q) {
   const dd = document.getElementById('peln-dd');
   const katIcon = { ringan:'🟡', sedang:'🟠', berat:'🔴' };
-  const filtered = q ? PELN_LIST.filter(([label]) => fuzzyMatch(label, q)) : PELN_LIST;
+  // filter out already selected
+  const selected = pelnList.map(p => p.label);
+  const source = PELN_LIST.filter(([label]) => !selected.includes(label));
+  const filtered = q ? source.filter(([label]) => fuzzyMatch(label, q)) : source;
   dd.innerHTML = filtered.length
     ? filtered.slice(0,20).map(([label,poin,kat]) =>
-        `<div class="dd-item" onmousedown="pilihPeln('${label.replace(/'/g,"\\'")}',${poin},'${kat}')">
+        `<div class="dd-item" onmousedown="tambahPeln('${label.replace(/'/g,"\\'")}',${poin},'${kat}')">
           <span>${katIcon[kat]} ${highlight(label, q||'')}</span>
           <span class="dd-kelas" style="font-weight:700;color:${poin>=30?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin} poin</span>
         </div>`).join('')
     : '<div class="dd-empty">Tidak ditemukan</div>';
   dd.classList.add('open');
 }
-function pilihPeln(label, poin, kat) {
-  selectedPeln = { label, poin, kat };
-  document.getElementById('inp-peln-search').value = label;
+function tambahPeln(label, poin, kat) {
+  if (pelnList.find(p => p.label === label)) return; // sudah ada
+  pelnList.push({ label, poin, kat });
+  document.getElementById('inp-peln-search').value = '';
   document.getElementById('peln-dd').classList.remove('open');
-  setPoinDisplay(selectedPeln);
+  renderPelnList();
 }
-function setPoinDisplay(p) {
-  const el = document.getElementById('poin-display');
-  if (p) { el.textContent = p.poin + ' poin'; el.className = 'poin-pill ' + p.kat; }
-  else    { el.textContent = '—'; el.className = 'poin-pill empty'; }
+function hapusPelnItem(idx) {
+  pelnList.splice(idx, 1);
+  renderPelnList();
+}
+function renderPelnList() {
+  const el = document.getElementById('peln-list');
+  const wrap = document.getElementById('poin-total-wrap');
+  const katIcon = { ringan:'🟡', sedang:'🟠', berat:'🔴' };
+  const katColor = { ringan:'#92400e', sedang:'#c2410c', berat:'var(--merah)' };
+  if (!pelnList.length) {
+    el.innerHTML = '';
+    wrap.style.display = 'none';
+    return;
+  }
+  el.innerHTML = pelnList.map((p, i) =>
+    `<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--hijau-pale);border:1px solid var(--hijau-light);border-radius:8px;">
+      <span style="flex:1;font-size:13px">${katIcon[p.kat]} ${p.label}</span>
+      <span style="font-weight:700;color:${katColor[p.kat]};font-size:13px;white-space:nowrap">${p.poin} poin</span>
+      <button onclick="hapusPelnItem(${i})" style="background:none;border:none;cursor:pointer;color:#f87171;font-size:16px;padding:0 4px;line-height:1">×</button>
+    </div>`
+  ).join('');
+  const total = pelnList.reduce((s, p) => s + p.poin, 0);
+  const totalColor = total >= 71 ? 'var(--merah)' : total >= 41 ? 'var(--orange)' : total >= 21 ? 'var(--kuning)' : 'var(--hijau)';
+  wrap.style.display = 'flex';
+  document.getElementById('poin-display').textContent = total + ' poin';
+  document.getElementById('poin-display').style.color = totalColor;
 }
 
 // ============================================================
-// SIMPAN
+// SIMPAN — support multi pelanggaran
 // ============================================================
 async function simpan() {
   const kelas = document.getElementById('inp-kelas').value;
@@ -954,39 +978,43 @@ async function simpan() {
   const guru  = document.getElementById('inp-guru').value.trim();
   const ket   = document.getElementById('inp-ket').value.trim();
 
-  if (!kelas || !nama || !selectedPeln || !tgl) {
-    toast('Harap isi: Kelas, Nama, Pelanggaran, dan Tanggal!', 'error'); return;
+  if (!kelas || !nama || !pelnList.length || !tgl) {
+    toast('Harap isi: Kelas, Nama, min. 1 Pelanggaran, dan Tanggal!', 'error'); return;
   }
-
-  const entry = {
-    id: Date.now().toString(),
-    tanggal: tgl, nama, kelas,
-    pelanggaran: selectedPeln.label,
-    kategori: selectedPeln.kat,
-    poin: selectedPeln.poin,
-    guru, ket
-  };
 
   const btn = document.getElementById('btn-simpan');
   btn.disabled = true; btn.innerHTML = '<div class="spin"></div> Menyimpan...';
 
-  // Simpan lokal dulu
-  ALL_DATA.push(entry);
+  const baseId = Date.now().toString();
+  const entries = pelnList.map((p, i) => ({
+    id: baseId + (i > 0 ? '_' + i : ''),
+    tanggal: tgl, nama, kelas,
+    pelanggaran: p.label,
+    kategori: p.kat,
+    poin: p.poin,
+    guru, ket
+  }));
+
+  // Simpan lokal
+  ALL_DATA.push(...entries);
   localStorage.setItem('poin_data', JSON.stringify(ALL_DATA));
 
-  // Kirim ke Sheets via Apps Script
+  // Kirim ke Sheets
   try {
-    await scriptPost('append', {
-      sheet: SHEET_PELN,
-      row: [entry.id, entry.tanggal, entry.nama, entry.kelas,
-            entry.pelanggaran, entry.kategori, entry.poin, entry.guru, entry.ket]
-    });
-    toast('✅ Tersimpan ke Google Sheets!', 'sukses');
+    for (const entry of entries) {
+      await scriptPost('append', {
+        sheet: SHEET_PELN,
+        row: [entry.id, entry.tanggal, entry.nama, entry.kelas,
+              entry.pelanggaran, entry.kategori, entry.poin, entry.guru, entry.ket]
+      });
+    }
+    const total = pelnList.reduce((s,p) => s+p.poin, 0);
+    toast(`✅ ${entries.length} pelanggaran tersimpan! Total: ${total} poin`, 'sukses');
   } catch(e) {
     toast('⚠️ Tersimpan lokal (Sheets: ' + e.message + ')', 'error');
   }
 
-  // Tambah siswa baru ke list lokal
+  // Tambah siswa baru
   if (!SISWA_LIST.find(s => s.nama === nama && s.kelas === kelas)) {
     SISWA_LIST.push({ nama, kelas });
     localStorage.setItem('poin_siswa', JSON.stringify(SISWA_LIST));
@@ -996,9 +1024,10 @@ async function simpan() {
   document.getElementById('inp-siswa').value = '';
   document.getElementById('inp-peln-search').value = '';
   document.getElementById('inp-ket').value = '';
-  setPoinDisplay(null);
+  document.getElementById('peln-list').innerHTML = '';
+  document.getElementById('poin-total-wrap').style.display = 'none';
   selectedSiswa = '';
-  selectedPeln  = null;
+  pelnList = [];
   btn.disabled  = false;
   btn.innerHTML = '💾 Simpan Pelanggaran';
 
@@ -1131,7 +1160,7 @@ function renderUserList() {
     <div class="user-row">
       <div class="user-ava" style="background:${avaColor(u.nama||u.username)}">${(u.nama||u.username)[0].toUpperCase()}</div>
       <div class="user-info">
-        <div class="un">${u.nama||u.username} <span style="font-size:11px;color:var(--slate);font-family:'DM Mono',monospace">@${u.username}</span></div>
+        <div class="un">${u.nama||u.username} <span style="font-size:11px;color:var(--slate);font-family:'Courier New',Courier,monospace">@${u.username}</span></div>
         <div class="ur">${u.kelas ? 'Kelas '+u.kelas : 'Semua Kelas'}</div>
       </div>
       <span class="role-pill ${roleCls[u.role]||''}">${roleLabel[u.role]||u.role}</span>
@@ -1182,7 +1211,7 @@ function generateLaporan() {
            ['SP1 (41–60)',siswa.filter(s=>s.poin>=41&&s.poin<=60).length,'var(--orange)'],
            ['SP2+ / DO',siswa.filter(s=>s.poin>60).length,'var(--merah)']].map(([l,v,c])=>
           `<div style="border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center">
-            <div style="font-size:24px;font-weight:800;color:${c};font-family:'DM Mono',monospace">${v}</div>
+            <div style="font-size:24px;font-weight:800;color:${c};font-family:'Courier New',Courier,monospace">${v}</div>
             <div style="font-size:11px;color:var(--slate);font-weight:600;margin-top:3px">${l}</div>
           </div>`).join('')}
       </div>
