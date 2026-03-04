@@ -1084,6 +1084,7 @@ function getDataForRole() {
 }
 
 function renderAll() {
+  if (!SESSION) return;
   renderStats();
   renderRiwayat();
   renderRekapSiswa();
