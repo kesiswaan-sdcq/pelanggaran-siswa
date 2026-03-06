@@ -164,8 +164,14 @@ header {
 .search-input:focus { border-color: var(--hijau-mid); box-shadow: 0 0 0 3px rgba(30,138,80,0.12); }
 .dropdown-list {
   position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: white;
-  border: 1.5px solid var(--hijau-mid); border-radius: 10px; max-height: 220px;
+  border: 1.5px solid var(--hijau-mid); border-radius: 10px; max-height: 320px;
   overflow-y: auto; z-index: 300; box-shadow: 0 8px 24px rgba(0,0,0,0.12); display: none;
+}
+.dd-group-header {
+  padding: 6px 14px 4px; font-size: 10px; font-weight: 800; color: var(--slate);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  border-top: 1px solid var(--border); margin-top: 2px; background: var(--slate-light);
+  position: sticky; top: 0;
 }
 .dropdown-list.open { display: block; }
 .dd-item { padding: 10px 14px; cursor: pointer; font-size: 13px; transition: background 0.12s; display: flex; align-items: center; justify-content: space-between; }
@@ -441,8 +447,9 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
                   oninput="onMpPelnInput()" onfocus="onMpPelnFocus()" onblur="onMpPelnBlur()">
                 <div class="dropdown-list" id="mp-peln-dd"></div>
               </div>
-              <div id="mp-peln-selected" style="display:none;margin-top:8px;padding:10px 14px;border-radius:10px;background:var(--hijau-pale);border:1.5px solid var(--hijau-light)">
-                <span id="mp-peln-label" style="font-weight:700;color:var(--hijau);font-size:13px"></span>
+              <div id="mp-peln-selected" style="display:none;margin-top:8px;padding:10px 14px;border-radius:10px;background:var(--hijau-pale);border:1.5px solid var(--hijau-light);display:flex;align-items:center;gap:8px">
+                <span id="mp-peln-label" style="font-weight:700;color:var(--hijau);font-size:13px;flex:1"></span>
+                <button onclick="resetMpPeln()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#94a3b8;padding:0 4px;line-height:1;flex-shrink:0" title="Reset">×</button>
               </div>
             </div>
           </div>
@@ -766,6 +773,14 @@ function pilihMpPeln(label, poin, kat) {
   mpRenderSiswaList();
 }
 
+
+function resetMpPeln() {
+  mpSelectedPeln = null;
+  document.getElementById('mp-peln-search').value = '';
+  document.getElementById('mp-peln-selected').style.display = 'none';
+  document.getElementById('mp-siswa-wrap').style.display = 'none';
+  document.getElementById('mp-summary').style.display = 'none';
+}
 function mpRenderSiswaList() {
   const kelas = document.getElementById('mp-kelas').value;
   const wrap = document.getElementById('mp-siswa-wrap');
@@ -1250,4 +1265,3 @@ function toast(msg,type=''){const el=document.getElementById('toast');el.textCon
 </script>
 </body>
 </html>
-
