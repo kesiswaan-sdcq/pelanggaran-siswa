@@ -155,6 +155,11 @@ tbody td{padding:10px 14px;vertical-align:middle;}
 #loading{position:fixed;inset:0;background:rgba(255,255,255,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px;}
 #loading .big-spin{width:44px;height:44px;border:3px solid var(--hijau-light);border-top-color:var(--hijau);border-radius:50%;animation:spin 0.8s linear infinite;}
 #loading p{font-size:14px;color:var(--slate);font-weight:600;}
+
+/* ── DROPDOWN CATEGORY HEADER (sticky, sama di Per Murid & Per Pelanggaran) ── */
+.dd-cat-header{padding:6px 14px 4px;font-size:10px;font-weight:800;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em;background:var(--slate-light);position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border);}
+.dd-cat-header:not(:first-child){border-top:1px solid var(--border);}
+
 @media print{header,.nav-tabs,.lap-toolbar,.filter-bar,.btn-del,.btn-logout,.rekap-toolbar{display:none !important;}body{background:white;}.card{box-shadow:none;border:1px solid #ddd;}}
 </style>
 </head>
@@ -203,7 +208,7 @@ tbody td{padding:10px 14px;vertical-align:middle;}
         <button class="mode-btn active" id="mode-btn-siswa" onclick="switchMode('siswa')">👤 Per Murid</button>
         <button class="mode-btn" id="mode-btn-pelanggaran" onclick="switchMode('pelanggaran')">📋 Per Pelanggaran</button>
       </div>
-      <!-- MODE 1 -->
+      <!-- MODE 1: PER MURID -->
       <div id="mode-siswa">
         <div class="card">
           <div class="card-head">✏️ Input Per Murid</div>
@@ -215,9 +220,11 @@ tbody td{padding:10px 14px;vertical-align:middle;}
                 <div class="dropdown-list" id="siswa-dd"></div>
               </div>
             </div>
-            <div class="fg full"><label>Jenis Pelanggaran — bisa pilih lebih dari satu</label>
+            <div class="fg full">
+              <label>Jenis Pelanggaran — bisa pilih lebih dari satu</label>
               <div class="search-wrap">
                 <input class="search-input" id="inp-peln-search" placeholder="Ketik pelanggaran, pilih, lalu tambah lagi..." autocomplete="off" oninput="onPelnInput()" onfocus="onPelnFocus()" onblur="onPelnBlur()" onkeydown="onPelnKeydown(event)">
+                <!-- dropdown dengan sticky category header, sama seperti Per Pelanggaran -->
                 <div class="dropdown-list" id="peln-dd"></div>
               </div>
               <div id="peln-list" style="margin-top:8px;display:flex;flex-direction:column;gap:6px"></div>
@@ -234,7 +241,7 @@ tbody td{padding:10px 14px;vertical-align:middle;}
           <button class="btn-primary" onclick="simpan()" id="btn-simpan">💾 Simpan Pelanggaran</button>
         </div>
       </div>
-      <!-- MODE 2 -->
+      <!-- MODE 2: PER PELANGGARAN -->
       <div id="mode-pelanggaran" style="display:none">
         <div class="card">
           <div class="card-head">📋 Input Per Pelanggaran</div>
@@ -415,13 +422,7 @@ let CFG=Object.assign({},DEFAULT_CFG,JSON.parse(localStorage.getItem('poin_cfg')
 let SESSION=null,ALL_DATA=[],ALL_USERS=[],SISWA_LIST=[],ALL_REWARD=[];
 const SHEET_PELN='Pelanggaran',SHEET_USERS='Users',SHEET_SISWA='Siswa',SHEET_REWARD='Reward';
 
-// ══════════════════════════════════════════════════════════════════
-// PELN_LIST — UPDATED (3 kategori: ringan, sedang, berat)
-// Berat semua 100 poin → otomatis Proses 2
-// DO = 999 → langsung dikembalikan ke ortu
-// ══════════════════════════════════════════════════════════════════
 const PELN_LIST=[
-  // RINGAN — 5 poin
   ['Terlambat lebih dari 15 menit',5,'ringan'],
   ['Tidak membawa kartu pelajar / name tag / id card',5,'ringan'],
   ['Tidak mengenakan seragam sesuai ketentuan',5,'ringan'],
@@ -458,7 +459,6 @@ const PELN_LIST=[
   ['Terlambat menaruh wadah makan',5,'ringan'],
   ['Tidak memakai alas kaki di area lapangan',5,'ringan'],
   ['Bermain bola/basket setelah jam kepulangan',5,'ringan'],
-  // SEDANG — 10–25 poin (administratif, tetap Proses 1)
   ['Membawa buku perpustakaan tanpa izin',10,'sedang'],
   ['Pulang sebelum waktunya tanpa izin',15,'sedang'],
   ['Merusak atau mencoret sarana prasarana sekolah',15,'sedang'],
@@ -467,7 +467,6 @@ const PELN_LIST=[
   ['Merusak atau mencoret buku perpustakaan',15,'sedang'],
   ['Membawa gadget atau smartwatch',20,'sedang'],
   ['Memakai pakaian bebas tidak sesuai syariat',25,'sedang'],
-  // BERAT — 100 poin semua → langsung Proses 2
   ['Meninggalkan area sekolah tanpa izin saat KBM',100,'berat'],
   ['Tindakan tidak menyenangkan / intimidasi ke murid lain',100,'berat'],
   ['Melindungi teman yang melakukan pelanggaran berat',100,'berat'],
@@ -487,7 +486,6 @@ const PELN_LIST=[
   ['Menghina guru',100,'berat'],
   ['Tato tubuh',100,'berat'],
   ['Membawa senjata tajam',100,'berat'],
-  // DO (bagian dari Berat) — 999 poin = langsung dikembalikan ke ortu
   ['Perilaku LGBT',999,'berat'],
   ['Tindak kekerasan kepada guru',999,'berat'],
   ['Meminum alkohol / menghisap lem / berjudi',999,'berat'],
@@ -528,21 +526,30 @@ function onMpKelasChange(){mpRenderSiswaList();}
 function onMpPelnInput(){renderMpPelnDD(document.getElementById('mp-peln-search').value);}
 function onMpPelnFocus(){clearTimeout(mpBlurTimer2);renderMpPelnDD(document.getElementById('mp-peln-search').value);}
 function onMpPelnBlur(){mpBlurTimer2=setTimeout(()=>document.getElementById('mp-peln-dd').classList.remove('open'),200);}
-function renderMpPelnDD(q){
-  const dd=document.getElementById('mp-peln-dd');
+
+// ── Shared helper: build grouped dropdown HTML with sticky category headers ──
+function buildGroupedPelnHTML(items, q) {
   const katIcon={ringan:'🟡',sedang:'🟠',berat:'🔴'};
   const katGroup={ringan:[],sedang:[],berat:[]};
-  PELN_LIST.forEach(([label,poin,kat])=>{if(!q||fuzzyMatch(label,q))katGroup[kat].push([label,poin,kat]);});
+  items.forEach(([label,poin,kat])=>katGroup[kat].push([label,poin,kat]));
   let html='';
   ['ringan','sedang','berat'].forEach(kat=>{
     if(!katGroup[kat].length)return;
     const subLabel=kat==='berat'?'BERAT (→ Proses 2 langsung)':kat.toUpperCase();
-    html+=`<div style="padding:6px 14px 4px;font-size:10px;font-weight:800;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em;border-top:1px solid var(--border);margin-top:2px;background:var(--slate-light);position:sticky;top:0">${katIcon[kat]} ${subLabel}</div>`;
-    html+=katGroup[kat].map(([label,poin])=>`<div class="dd-item" onmousedown="pilihMpPeln('${label.replace(/'/g,"\\'")}',${poin},'${kat}')"><span>${highlight(label,q||'')}</span><span class="dd-kelas" style="font-weight:700;color:${poin>=999?'#7f1d1d':poin>=100?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin>=999?'DO':poin+' poin'}</span></div>`).join('');
+    html+=`<div class="dd-cat-header">${katIcon[kat]} ${subLabel}</div>`;
+    html+=katGroup[kat].map(([label,poin])=>`<div class="dd-item" onmousedown="__DD_ACTION__('${label.replace(/'/g,"\\'")}',${poin},'${kat}')"><span>${highlight(label,q||'')}</span><span class="dd-kelas" style="font-weight:700;color:${poin>=999?'#7f1d1d':poin>=100?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin>=999?'⛔ DO':poin+' poin'}</span></div>`).join('');
   });
-  dd.innerHTML=html||'<div class="dd-empty">Tidak ditemukan</div>';
+  return html || '<div class="dd-empty">Tidak ditemukan</div>';
+}
+
+function renderMpPelnDD(q){
+  const dd=document.getElementById('mp-peln-dd');
+  const filtered=q?PELN_LIST.filter(([label])=>fuzzyMatch(label,q)):PELN_LIST;
+  let html=buildGroupedPelnHTML(filtered,q).replace(/__DD_ACTION__/g,'pilihMpPeln');
+  dd.innerHTML=html;
   dd.classList.add('open');
 }
+
 function pilihMpPeln(label,poin,kat){
   mpSelectedPeln={label,poin,kat};
   document.getElementById('mp-peln-search').value=label;
@@ -632,20 +639,39 @@ function onSiswaKeydown(e){if(e.key==='Backspace'||e.key==='Delete')selectedSisw
 function renderSiswaDD(list,q){const dd=document.getElementById('siswa-dd');dd.innerHTML=list.length?list.slice(0,30).map(n=>`<div class="dd-item" onmousedown="pilihSiswa('${n.replace(/'/g,"\\'")}')"><span>${highlight(n,q)}</span></div>`).join(''):'<div class="dd-empty">Tidak ditemukan — nama baru dicatat otomatis</div>';dd.classList.add('open');}
 function pilihSiswa(nama){selectedSiswa=nama;document.getElementById('inp-siswa').value=nama;document.getElementById('siswa-dd').classList.remove('open');}
 
+// ── PER MURID: dropdown pelanggaran dengan sticky category header ──
 let pelnList=[],pelnBlurTimer=null;
 function onPelnInput(){renderPelnDD(document.getElementById('inp-peln-search').value);}
 function onPelnFocus(){clearTimeout(pelnBlurTimer);renderPelnDD(document.getElementById('inp-peln-search').value);}
 function onPelnBlur(){pelnBlurTimer=setTimeout(()=>document.getElementById('peln-dd').classList.remove('open'),200);}
 function onPelnKeydown(e){if(e.key==='Escape')document.getElementById('peln-dd').classList.remove('open');}
+
 function renderPelnDD(q){
   const dd=document.getElementById('peln-dd');
-  const katIcon={ringan:'🟡',sedang:'🟠',berat:'🔴'};
   const selected=pelnList.map(p=>p.label);
+  // Filter out already-selected items
   const source=PELN_LIST.filter(([label])=>!selected.includes(label));
   const filtered=q?source.filter(([label])=>fuzzyMatch(label,q)):source;
-  dd.innerHTML=filtered.length?filtered.slice(0,20).map(([label,poin,kat])=>`<div class="dd-item" onmousedown="tambahPeln('${label.replace(/'/g,"\\'")}',${poin},'${kat}')"><span>${katIcon[kat]} ${highlight(label,q||'')}</span><span class="dd-kelas" style="font-weight:700;color:${poin>=999?'#7f1d1d':poin>=100?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin>=999?'⛔ DO':poin+' poin'}</span></div>`).join(''):'<div class="dd-empty">Tidak ditemukan</div>';
+  if(!filtered.length){
+    dd.innerHTML='<div class="dd-empty">Tidak ditemukan</div>';
+    dd.classList.add('open');
+    return;
+  }
+  // Group by category with sticky headers — sama persis dengan Per Pelanggaran
+  const katIcon={ringan:'🟡',sedang:'🟠',berat:'🔴'};
+  const katGroup={ringan:[],sedang:[],berat:[]};
+  filtered.forEach(([label,poin,kat])=>katGroup[kat].push([label,poin,kat]));
+  let html='';
+  ['ringan','sedang','berat'].forEach(kat=>{
+    if(!katGroup[kat].length)return;
+    const subLabel=kat==='berat'?'BERAT (→ Proses 2 langsung)':kat.toUpperCase();
+    html+=`<div class="dd-cat-header">${katIcon[kat]} ${subLabel}</div>`;
+    html+=katGroup[kat].map(([label,poin])=>`<div class="dd-item" onmousedown="tambahPeln('${label.replace(/'/g,"\\'")}',${poin},'${kat}')"><span>${highlight(label,q||'')}</span><span class="dd-kelas" style="font-weight:700;color:${poin>=999?'#7f1d1d':poin>=100?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin>=999?'⛔ DO':poin+' poin'}</span></div>`).join('');
+  });
+  dd.innerHTML=html;
   dd.classList.add('open');
 }
+
 function tambahPeln(label,poin,kat){if(pelnList.find(p=>p.label===label))return;pelnList.push({label,poin,kat});document.getElementById('inp-peln-search').value='';document.getElementById('peln-dd').classList.remove('open');renderPelnList();}
 function hapusPelnItem(idx){pelnList.splice(idx,1);renderPelnList();}
 function renderPelnList(){
@@ -677,14 +703,11 @@ function getDataForRole(){return SESSION.role==='walas'?ALL_DATA.filter(d=>d.kel
 function getRewardForRole(){return SESSION.role==='walas'?ALL_REWARD.filter(d=>d.kelas===SESSION.kelas):ALL_REWARD;}
 function renderAll(){if(!SESSION)return;renderStats();renderRiwayat();renderRiwayatReward();renderRekapSiswa();renderUserList();}
 
-// ── REWARD HELPERS ────────────────────────────────────────────────
-// Hitung saldo reward bulan ini untuk siswa (maks -20/bulan, tidak kurangi poin Berat)
 function getRewardBulanIni(nama,kelas){
   const now=new Date();const prefix=`${now.getFullYear()}-${pad(now.getMonth()+1)}`;
   const rwBulanIni=ALL_REWARD.filter(r=>r.nama===nama&&r.kelas===kelas&&r.tanggal.startsWith(prefix));
   return Math.min(rwBulanIni.reduce((s,r)=>s+r.poin,0),20);
 }
-// Hitung total reward semua waktu (maks 20/bulan per bulan)
 function getTotalReward(nama,kelas){
   const byBulan={};
   ALL_REWARD.filter(r=>r.nama===nama&&r.kelas===kelas).forEach(r=>{
@@ -692,7 +715,6 @@ function getTotalReward(nama,kelas){
   });
   return Object.values(byBulan).reduce((s,v)=>s+Math.min(v,20),0);
 }
-// Hitung saldo efektif: poin Berat terkunci, reward hanya kurangi poin Ringan/Sedang
 function getSaldoEfektif(nama,kelas){
   const data=getDataForRole().filter(d=>d.nama===nama&&d.kelas===kelas);
   const poinBerat=data.filter(d=>d.kategori==='berat'&&d.poin<999).reduce((s,d)=>s+d.poin,0);
@@ -702,7 +724,6 @@ function getSaldoEfektif(nama,kelas){
   return poinBerat+saldoRS;
 }
 
-// ── REWARD INPUT ──────────────────────────────────────────────────
 let rwSelectedSiswa='',rwBlurTimer=null;
 function onRwKelasChange(){rwSelectedSiswa='';document.getElementById('rw-siswa').value='';document.getElementById('rw-siswa-dd').classList.remove('open');}
 function onRwSiswaInput(){const kelas=document.getElementById('rw-kelas').value,q=document.getElementById('rw-siswa').value;const list=getSiswaByKelas(kelas).filter(n=>!q||fuzzyMatch(n,q));renderRwSiswaDD(list,q);}
@@ -721,7 +742,6 @@ async function simpanReward(){
   const guru=document.getElementById('rw-guru').value.trim();
   const ket=document.getElementById('rw-ket').value.trim();
   if(!kelas||!nama||!jenis||!tgl){toast('Harap isi Kelas, Nama, Jenis Reward, dan Tanggal!','error');return;}
-  // Cek batas 20 poin per bulan
   const bulanPrefix=tgl.slice(0,7);
   const sudahBulanIni=ALL_REWARD.filter(r=>r.nama===nama&&r.kelas===kelas&&r.tanggal.startsWith(bulanPrefix)).reduce((s,r)=>s+r.poin,0);
   if(sudahBulanIni>=20){toast(`⚠️ ${nama} sudah mencapai batas reward bulan ini (20 poin)!`,'error');return;}
@@ -746,7 +766,6 @@ function renderRiwayatReward(){
 }
 async function hapusReward(id){if(!confirm('Hapus reward ini?'))return;ALL_REWARD=ALL_REWARD.filter(r=>r.id!==id);localStorage.setItem('poin_reward',JSON.stringify(ALL_REWARD));try{await scriptPost('delete',{sheet:SHEET_REWARD,id});}catch(e){}renderAll();toast('Reward dihapus','sukses');}
 
-
 function renderStats(){
   const data=getDataForRole(),map={};
   data.forEach(d=>{const k=d.nama+'|'+d.kelas;if(!map[k])map[k]={nama:d.nama,kelas:d.kelas};});
@@ -755,7 +774,6 @@ function renderStats(){
   const el=document.getElementById('stats-rekap');if(!el)return;
   el.innerHTML=`<div class="stat-card c-hijau"><div class="num">${siswaList.length}</div><div class="lbl">Murid Tercatat</div></div><div class="stat-card"><div class="num">${data.length}</div><div class="lbl">Total Pelanggaran</div></div><div class="stat-card c-orange"><div class="num">${saldos.filter(p=>p>=100&&p<270).length}</div><div class="lbl">Proses 2–3 (100–269)</div></div><div class="stat-card c-merah"><div class="num">${saldos.filter(p=>p>=270).length}</div><div class="lbl">Proses 4–5 / Kritis</div></div>`;
 }
-
 
 function renderRiwayat(){
   let data=getDataForRole();
@@ -773,13 +791,11 @@ function renderRekapSiswa(){
   const map={};
   data.forEach(d=>{const k=d.nama+'|'+d.kelas;if(!map[k])map[k]={nama:d.nama,kelas:d.kelas,poinKotor:0,list:[]};map[k].poinKotor+=d.poin>=999?0:d.poin;map[k].list.push(d);});
   let siswa=Object.values(map).filter(s=>(!q||s.nama.toLowerCase().includes(q))&&(!kelas||s.kelas===kelas));
-  // Hitung saldo efektif per siswa
   siswa=siswa.map(s=>({...s,saldo:getSaldoEfektif(s.nama,s.kelas),totalReward:getTotalReward(s.nama,s.kelas),rewardBulanIni:getRewardBulanIni(s.nama,s.kelas)})).sort((a,b)=>b.saldo-a.saldo);
   const el=document.getElementById('rekap-siswa');if(!el)return;
   if(!siswa.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate);font-style:italic">Belum ada data murid</div>';return;}
   el.innerHTML=siswa.map(s=>{
     const t=getTindakan(s.saldo);
-    const rwBadge=s.totalReward>0?`<div style="font-size:11px;color:var(--hijau);font-weight:700;margin-left:8px">🌟 -${s.totalReward} reward</div>`:'';
     const rwBulanBadge=s.rewardBulanIni>0?`<div style="font-size:11px;background:#f0fdf4;color:#15803d;border:1px solid #86efac;border-radius:6px;padding:2px 8px;margin:8px 16px 0;font-weight:600">🌟 Reward bulan ini: -${s.rewardBulanIni} poin (sisa kuota: ${20-s.rewardBulanIni} poin)</div>`:'';
     const rwList=ALL_REWARD.filter(r=>r.nama===s.nama&&r.kelas===s.kelas).sort((a,b)=>b.tanggal.localeCompare(a.tanggal));
     const rwRows=rwList.map(r=>`<tr style="background:#f0fdf4"><td style="white-space:nowrap">${fmtDate(r.tanggal)}</td><td>🌟 ${r.reward}</td><td><span class="badge" style="background:#dcfce7;color:#15803d">Reward</span></td><td><strong style="color:var(--hijau)">-${r.poin}</strong></td><td style="color:var(--slate)">${r.ket||'—'}</td></tr>`).join('');
@@ -839,14 +855,6 @@ function saveTapel(){CFG.tapel=document.getElementById('cfg-tapel').value.trim()
 function saveConfig(){CFG.sheetId=document.getElementById('cfg-sheet-id').value.trim();CFG.apiKey=document.getElementById('cfg-api-key').value.trim();CFG.appsScriptUrl=document.getElementById('cfg-script-url').value.trim();localStorage.setItem('poin_cfg',JSON.stringify(CFG));toast('Konfigurasi disimpan!','sukses');loadAll().then(renderAll);}
 function switchTab(id,btn){document.querySelectorAll('.tab-pane').forEach(el=>el.classList.remove('active'));document.querySelectorAll('.nav-tab').forEach(el=>el.classList.remove('active'));document.getElementById('tab-'+id)?.classList.add('active');if(btn)btn.classList.add('active');if(id==='rekap')renderAll();}
 
-// ══════════════════════════════════════════════════════════════════
-// getTindakan — UPDATED thresholds
-// Proses 1: 50 / 70 / 90
-// Proses 2: 100 / 130 / 160
-// Proses 3: 190 / 215 / 240
-// Proses 4: 270 / 300 / 330
-// Proses 5: 360 / 390 / 415 / 440
-// ══════════════════════════════════════════════════════════════════
 function getTindakan(poin){
   if(poin<50)  return{cls:'t0',proses:'—',teks:'✅ Belum ada tindakan — Akumulasi poin masih rendah'};
   if(poin<70)  return{cls:'t1',proses:'Proses 1 · Panggilan I',teks:'👤 Wali Kelas: Dipanggil, teguran lisan, dicatat buku perkembangan. WA orang tua sebagai pemberitahuan awal.'};
