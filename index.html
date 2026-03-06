@@ -268,11 +268,13 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 .siswa-body { display: none; border-top: 1px solid var(--border); background: white; }
 .siswa-body.open { display: block; }
 .tindakan-bar { margin: 12px 16px 0; padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px; border: 1px solid; }
+.t0 { background: #f0fdf4; color: #15803d; border-color: #86efac; }
 .t1 { background: #fffbeb; color: #92400e; border-color: #fcd34d; }
 .t2 { background: #fff7ed; color: #9a3412; border-color: #fb923c; }
 .t3 { background: #fef2f2; color: #b91c1c; border-color: #fca5a5; }
 .t4 { background: #450a0a; color: #fca5a5; border-color: #b91c1c; }
 .t5 { background: #1a0000; color: #ff6b6b; border-color: #7f1d1d; }
+.t6 { background: #0a0000; color: #fca5a5; border-color: #7f1d1d; }
 
 /* ========== REKAP TOOLBAR ========== */
 .rekap-toolbar {
@@ -598,10 +600,10 @@ const PELN_LIST = [
   ['Tidak memakai kaos kaki',3,'ringan'],
   ['Tidak memakai ciput (banat)',5,'ringan'],
   ['Tidak memakai peci (banin)',5,'ringan'],
-  ['kuku panjang',5,'ringan'],
+  ['Kuku panjang',5,'ringan'],
   ['Rambut gondrong / diwarnai / khoza',5,'ringan'],
   ['Berkata kasar atau kotor',5,'ringan'],
-  ['Membawa barang K-Pop / anime / western',5,'ringan'],
+  ['Membawa barang K-Pop / anime (komik) / western',5,'ringan'],
   ['Berjualan di lingkungan sekolah',2,'ringan'],
   ['Membeli makanan di luar area sekolah saat KBM',5,'ringan'],
   ['Mengambil makan siang atau snack tanpa izin',5,'ringan'],
@@ -1096,7 +1098,10 @@ function renderRekapSiswa() {
   if(!siswa.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate);font-style:italic">Belum ada data siswa</div>';return;}
   el.innerHTML=siswa.map(s=>{
     const t=getTindakan(s.poin);
-    return `<div class="siswa-card"><div class="siswa-head" onclick="toggleSiswa(this)"><div class="ava" style="background:${avaColor(s.nama)}">${s.nama[0].toUpperCase()}</div><div class="siswa-info"><div class="nama">${s.nama}</div><div class="meta">Kelas ${s.kelas} · ${s.list.length}× pelanggaran</div></div><div class="siswa-poin" style="color:${poinColor2(s.poin)}">${s.poin} <span style="font-size:12px;font-weight:500;color:var(--slate)">poin</span></div><div class="siswa-arrow">▼</div></div><div class="siswa-body"><div class="tindakan-bar ${t.cls}">${t.teks}</div><div class="tbl-wrap" style="margin:12px 16px 14px;border-radius:8px"><table><thead><tr><th>Tgl</th><th>Pelanggaran</th><th>Kat</th><th>Poin</th><th>Ket</th></tr></thead><tbody>${s.list.sort((a,b)=>b.tanggal.localeCompare(a.tanggal)).map(d=>`<tr><td style="white-space:nowrap">${fmtDate(d.tanggal)}</td><td>${d.pelanggaran}</td><td><span class="badge ${d.kategori}">${katLabel(d.kategori)}</span></td><td><strong>${d.poin}</strong></td><td style="color:var(--slate)">${d.ket||'—'}</td></tr>`).join('')}</tbody></table></div></div></div>`;
+    return `<div class="siswa-card"><div class="siswa-head" onclick="toggleSiswa(this)"><div class="ava" style="background:${avaColor(s.nama)}">${s.nama[0].toUpperCase()}</div><div class="siswa-info"><div class="nama">${s.nama}</div><div class="meta">Kelas ${s.kelas} · ${s.list.length}× pelanggaran</div></div><div class="siswa-poin" style="color:${poinColor2(s.poin)}">${s.poin} <span style="font-size:12px;font-weight:500;color:var(--slate)">poin</span></div><div class="siswa-arrow">▼</div></div><div class="siswa-body"><div class="tindakan-bar ${t.cls}" style="flex-direction:column;align-items:flex-start;gap:4px">
+              ${t.proses ? `<div style="font-size:10px;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;opacity:0.7">${t.proses}</div>` : ''}
+              <div>${t.teks}</div>
+            </div><div class="tbl-wrap" style="margin:12px 16px 14px;border-radius:8px"><table><thead><tr><th>Tgl</th><th>Pelanggaran</th><th>Kat</th><th>Poin</th><th>Ket</th></tr></thead><tbody>${s.list.sort((a,b)=>b.tanggal.localeCompare(a.tanggal)).map(d=>`<tr><td style="white-space:nowrap">${fmtDate(d.tanggal)}</td><td>${d.pelanggaran}</td><td><span class="badge ${d.kategori}">${katLabel(d.kategori)}</span></td><td><strong>${d.poin}</strong></td><td style="color:var(--slate)">${d.ket||'—'}</td></tr>`).join('')}</tbody></table></div></div></div>`;
   }).join('');
 }
 function toggleSiswa(head){const body=head.nextElementSibling,arr=head.querySelector('.siswa-arrow');body.classList.toggle('open');arr.classList.toggle('open');}
@@ -1208,7 +1213,7 @@ function generateLaporan() {
         <thead><tr style="background:var(--hijau);color:white">
           <th style="padding:10px 12px">No</th><th style="padding:10px 12px">Nama Siswa</th><th style="padding:10px 12px">Kelas</th><th style="padding:10px 12px;text-align:center">Jml</th><th style="padding:10px 12px;text-align:center">Total Poin</th><th style="padding:10px 12px">Status</th>
         </tr></thead>
-        <tbody>${siswa.length?siswa.map((s,i)=>{const t=getTindakan(s.poin);return`<tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 12px;color:var(--slate)">${i+1}</td><td style="padding:9px 12px;font-weight:700">${s.nama}</td><td style="padding:9px 12px">${s.kelas}</td><td style="padding:9px 12px;text-align:center">${s.cnt}×</td><td style="padding:9px 12px;text-align:center;font-weight:800;color:${poinColor2(s.poin)};font-size:15px">${s.poin}</td><td style="padding:9px 12px;font-size:12px">${t.teks.replace(/^[^\s]+ /,'')}</td></tr>`;}).join(''):'<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--slate);font-style:italic">Tidak ada data pada periode ini</td></tr>'}</tbody>
+        <tbody>${siswa.length?siswa.map((s,i)=>{const t=getTindakan(s.poin);return`<tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 12px;color:var(--slate)">${i+1}</td><td style="padding:9px 12px;font-weight:700">${s.nama}</td><td style="padding:9px 12px">${s.kelas}</td><td style="padding:9px 12px;text-align:center">${s.cnt}×</td><td style="padding:9px 12px;text-align:center;font-weight:800;color:${poinColor2(s.poin)};font-size:15px">${s.poin}</td><td style="padding:9px 12px;font-size:12px">${(t.proses ? `<div style="font-size:10px;font-weight:700;opacity:0.7;margin-bottom:2px">${t.proses}</div>` : '') + t.teks.replace(/^\S+ /,'')}</td></tr>`;}).join(''):'<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--slate);font-style:italic">Tidak ada data pada periode ini</td></tr>'}</tbody>
       </table>
       <div style="border-top:1.5px solid var(--border);padding-top:20px;margin-top:24px;display:flex;justify-content:space-between">
         <div><div style="font-size:12px;color:var(--slate);margin-bottom:44px">Mengetahui,</div><div style="font-size:12px;font-weight:700;border-top:1px solid var(--gelap);padding-top:4px">Kepala Sekolah</div></div>
@@ -1239,12 +1244,28 @@ function switchTab(id,btn) {
   if(id==='rekap')renderAll();
 }
 function getTindakan(poin) {
-  if(poin<=20)return{cls:'t1',teks:'⚠️ Teguran lisan/tertulis — Wali Kelas / Kesiswaan'};
-  if(poin<=40)return{cls:'t1',teks:'📞 Pemberitahuan orang tua — Wali Kelas'};
-  if(poin<=60)return{cls:'t2',teks:'🚨 SP1 — Pemanggilan orang tua — Wali Kelas & Kesiswaan'};
-  if(poin<=70)return{cls:'t3',teks:'🚨 SP2 — Surat perjanjian + konselor — Kesiswaan & Konselor'};
-  if(poin<=99)return{cls:'t4',teks:'🔴 SP3 — Skorsing — Kesiswaan & Kepala Sekolah'};
-  return{cls:'t5',teks:'⛔ DROP OUT — Dikembalikan ke orang tua — Kepala Sekolah'};
+  // PROSES 1 — Wali Kelas
+  if(poin < 50)  return{cls:'t0',proses:'—',teks:'✅ Belum ada tindakan — Akumulasi poin masih rendah'};
+  if(poin < 75)  return{cls:'t1',proses:'Proses 1 · Panggilan I',teks:'👤 Wali Kelas: Siswa dipanggil, teguran lisan, dicatat buku perkembangan. WA ortu sebagai pemberitahuan awal.'};
+  if(poin < 100) return{cls:'t1',proses:'Proses 1 · Panggilan II',teks:'✍️ Wali Kelas: Teguran tertulis + tanda tangan siswa. WA ortu ingatkan akumulasi poin & jadwal pertemuan.'};
+  if(poin < 125) return{cls:'t1',proses:'Proses 1 · Panggilan III',teks:'🤝 Wali Kelas: Pertemuan F2F dengan orang tua, tanda tangan bersama form penanganan.'};
+  // PROSES 2 — Waka Kesiswaan
+  if(poin < 150) return{cls:'t2',proses:'Proses 2 · Panggilan I',teks:'👤 Kesiswaan: Siswa dipanggil kesiswaan, pembinaan + dicatat.'};
+  if(poin < 175) return{cls:'t2',proses:'Proses 2 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan: Siswa + orang tua dipanggil ke sekolah, diskusi kondisi siswa bersama kesiswaan.'};
+  if(poin < 200) return{cls:'t2',proses:'Proses 2 · Panggilan III',teks:'📝 Kesiswaan: Surat pernyataan ditandatangani siswa + orang tua.'};
+  // PROSES 3 — Kesiswaan + Konselor
+  if(poin < 225) return{cls:'t3',proses:'Proses 3 · Panggilan I',teks:'🧠 Kesiswaan + Konselor: Siswa sesi konseling individual dengan konselor.'};
+  if(poin < 250) return{cls:'t3',proses:'Proses 3 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan + Konselor: Siswa + orang tua + konselor, diskusi mendalam cari akar masalah.'};
+  if(poin < 300) return{cls:'t3',proses:'Proses 3 · Panggilan III — ⚠️ PERINGATAN I',teks:'🚨 Kesiswaan + Konselor: Surat Peringatan I resmi + rekomendasi konselor tertulis.'};
+  // PROSES 4 — Kepala Sekolah
+  if(poin < 325) return{cls:'t4',proses:'Proses 4 · Panggilan I',teks:'🏫 Kepala Sekolah: Siswa + orang tua menghadap kepala sekolah, evaluasi serius.'};
+  if(poin < 350) return{cls:'t4',proses:'Proses 4 · Panggilan II — ⚠️ PERINGATAN II',teks:'📋 Kepala Sekolah: Surat Peringatan II + surat perjanjian bermaterai.'};
+  if(poin < 375) return{cls:'t4',proses:'Proses 4 · Panggilan III — 🔴 SKORSING',teks:'🔴 Kepala Sekolah: Skorsing sementara + ultimatum tertulis.'};
+  // PROSES 5 — Rapat Dewan Guru
+  if(poin < 400) return{cls:'t5',proses:'Proses 5 · Panggilan I',teks:'👩‍🏫 Rapat Dewan Guru: Rapat internal, orang tua diberitahu hasil rapat.'};
+  if(poin < 425) return{cls:'t5',proses:'Proses 5 · Panggilan II — ⚠️ PERINGATAN III',teks:'📢 Rapat Dewan Guru: Orang tua hadir di sekolah, Surat Peringatan III.'};
+  if(poin < 450) return{cls:'t5',proses:'Proses 5 · Panggilan III — 🔴 SKORSING PANJANG',teks:'🔴 Rapat Dewan Guru: Skorsing panjang, upaya pembinaan terakhir.'};
+  return{cls:'t6',proses:'⛔ PANGGILAN TERAKHIR',teks:'⛔ Rapat Dewan Guru: Dikembalikan kepada orang tua — Dikeluarkan dari sekolah.'};
 }
 function katLabel(k){return{ringan:'🟡 Ringan',sedang:'🟠 Sedang',berat:'🔴 Berat'}[k]||k;}
 function poinColor(kat){return{ringan:'#92400e',sedang:'#c2410c',berat:'var(--merah)'}[kat]||'inherit';}
