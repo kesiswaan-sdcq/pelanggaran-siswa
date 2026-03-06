@@ -220,6 +220,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 .badge.ringan { background: #fffbeb; color: #92400e; }
 .badge.sedang { background: #fff7ed; color: #9a3412; }
 .badge.berat { background: var(--merah-pale); color: var(--merah); }
+.badge.fatal { background: #450a0a; color: #fca5a5; }
 .badge.kelas { background: var(--hijau-pale); color: var(--hijau); }
 .btn-del { background: none; border: none; cursor: pointer; color: #f87171; font-size: 16px; padding: 2px 6px; border-radius: 4px; transition: background 0.12s; }
 .btn-del:hover { background: var(--merah-pale); }
@@ -363,7 +364,8 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="hdr-sub" id="hdr-sub">—</div>
     </div>
     <div class="hdr-role" id="hdr-role">—</div>
-    <button class="btn-logout" onclick="doLogout()">Keluar</button>
+    <button class="btn-logout" onclick="doRefresh()" style="background:rgba(255,255,255,0.1)">🔄 Refresh</button>
+  <button class="btn-logout" onclick="doLogout()">Keluar</button>
   </header>
   <div class="nav-tabs" id="nav-tabs"></div>
   <div class="content">
@@ -593,44 +595,46 @@ let SESSION=null, ALL_DATA=[], ALL_USERS=[], SISWA_LIST=[];
 const SHEET_PELN='Pelanggaran', SHEET_USERS='Users', SHEET_SISWA='Siswa';
 
 const PELN_LIST = [
+  // RINGAN
   ['Terlambat lebih dari 15 menit',5,'ringan'],
-  ['Tidak membawa kartu pelajar / name tag / id card',3,'ringan'],
+  ['Tidak membawa kartu pelajar / name tag / id card',5,'ringan'],
   ['Tidak mengenakan seragam sesuai ketentuan',5,'ringan'],
-  ['Tidak memakai sepatu dari rumah',3,'ringan'],
-  ['Tidak memakai kaos kaki',3,'ringan'],
+  ['Tidak memakai sepatu dari rumah',5,'ringan'],
+  ['Tidak memakai kaos kaki',5,'ringan'],
   ['Tidak memakai ciput (banat)',5,'ringan'],
   ['Tidak memakai peci (banin)',5,'ringan'],
   ['Kuku panjang',5,'ringan'],
   ['Rambut gondrong / diwarnai / khoza',5,'ringan'],
   ['Berkata kasar atau kotor',5,'ringan'],
   ['Membawa barang K-Pop / anime (komik) / western',5,'ringan'],
-  ['Berjualan di lingkungan sekolah',2,'ringan'],
+  ['Berjualan di lingkungan sekolah',5,'ringan'],
   ['Membeli makanan di luar area sekolah saat KBM',5,'ringan'],
   ['Mengambil makan siang atau snack tanpa izin',5,'ringan'],
-  ['Tidak menaruh sepatu/sandal di rak',3,'ringan'],
+  ['Tidak menaruh sepatu/sandal di rak',5,'ringan'],
   ['Sepatu/sandal di rak lewat jam kepulangan',5,'ringan'],
   ['Meninggalkan halaqah tanpa izin',5,'ringan'],
   ['Makan atau minum di mushola',5,'ringan'],
   ['Mengotori mushola',5,'ringan'],
-  ['Berperilaku tidak sopan di mushola',3,'ringan'],
+  ['Berperilaku tidak sopan di mushola',5,'ringan'],
   ['Menaruh mushaf atau buku agama sembarangan',5,'ringan'],
-  ['Telat mengembalikan buku perpustakaan',3,'ringan'],
+  ['Telat mengembalikan buku perpustakaan',5,'ringan'],
   ['Tidur / makan / minum di perpustakaan',5,'ringan'],
   ['Tidak memakai seragam olahraga saat jam olahraga',5,'ringan'],
-  ['Menggunakan lapangan di luar jadwal',3,'ringan'],
-  ['Menggunakan lapangan saat kondisi tidak aman',2,'ringan'],
-  ['Membuang sampah sembarangan',3,'ringan'],
-  ['Menggunakan alat olahraga di luar lapangan',2,'ringan'],
+  ['Menggunakan lapangan di luar jadwal',5,'ringan'],
+  ['Menggunakan lapangan saat kondisi tidak aman',5,'ringan'],
+  ['Membuang sampah sembarangan',5,'ringan'],
+  ['Menggunakan alat olahraga di luar lapangan',5,'ringan'],
   ['Membawa makanan/minuman ke lab komputer',5,'ringan'],
   ['Menggunakan komputer/internet tanpa izin guru',5,'ringan'],
   ['Makan saat KBM berlangsung',5,'ringan'],
   ['Berada di area sekolah saat KBM tanpa izin',5,'ringan'],
-  ['Berada di dalam kelas saat jam pulang',2,'ringan'],
-  ['Terlambat menaruh wadah makan',3,'ringan'],
-  ['Tidak memakai alas kaki di area lapangan',3,'ringan'],
-  ['Bermain bola/basket setelah jam kepulangan',3,'ringan'],
+  ['Berada di dalam kelas saat jam pulang',5,'ringan'],
+  ['Terlambat menaruh wadah makan',5,'ringan'],
+  ['Tidak memakai alas kaki di area lapangan',5,'ringan'],
+  ['Bermain bola/basket setelah jam kepulangan',5,'ringan'],
+  // SEDANG
   ['Meninggalkan area sekolah tanpa izin saat KBM',10,'sedang'],
-  ['Tindakan tidak menyenangkan ke siswa lain',10,'sedang'],
+  ['Tindakan tidak menyenangkan ke murid lain',10,'sedang'],
   ['Membawa buku perpustakaan tanpa izin',10,'sedang'],
   ['Pulang sebelum waktunya tanpa izin',15,'sedang'],
   ['Merusak atau mencoret sarana prasarana sekolah',15,'sedang'],
@@ -639,9 +643,10 @@ const PELN_LIST = [
   ['Menghilangkan buku perpustakaan',15,'sedang'],
   ['Merusak atau mencoret buku perpustakaan',15,'sedang'],
   ['Mengambil dagangan kantin tanpa bayar',21,'sedang'],
-  ['Melakukan pemerasan kepada siswa lain',21,'sedang'],
+  ['Melakukan pemerasan kepada murid lain',21,'sedang'],
   ['Membawa gadget atau smartwatch (SD)',21,'sedang'],
   ['Memakai pakaian bebas tidak sesuai syariat',25,'sedang'],
+  // BERAT
   ['Berkelahi',30,'berat'],
   ['Tidak salat wajib',30,'berat'],
   ['Membawa teman luar sekolah ke dalam tanpa izin',40,'berat'],
@@ -651,16 +656,17 @@ const PELN_LIST = [
   ['Membawa konten pornografi (buku/foto/video)',50,'berat'],
   ['Mengakses pornografi atau konten LGBT',50,'berat'],
   ['Mencemarkan nama baik sekolah',50,'berat'],
-  ['Melakukan bullying verbal atau non-verbal',75,'berat'],
-  ['Menghina guru',80,'berat'],
-  ['Tato tubuh',80,'berat'],
-  ['Membawa senjata tajam',80,'berat'],
+  ['Melakukan bullying verbal atau non-verbal',100,'berat'],
+  ['Menghina guru',100,'berat'],
+  ['Tato tubuh',100,'berat'],
+  ['Membawa senjata tajam',100,'berat'],
   ['Berpacaran',80,'berat'],
-  ['Perilaku LGBT',100,'berat'],
-  ['Tindak kekerasan kepada guru',100,'berat'],
-  ['Meminum alkohol / menghisap lem / berjudi',100,'berat'],
-  ['Menyimpan atau memakai narkotika',100,'berat'],
-  ['Hamil di luar nikah',100,'berat'],
+  // FATAL
+  ['Perilaku LGBT',999,'fatal'],
+  ['Tindak kekerasan kepada guru',999,'fatal'],
+  ['Meminum alkohol / menghisap lem / berjudi',999,'fatal'],
+  ['Menyimpan atau memakai narkotika',999,'fatal'],
+  ['Hamil di luar nikah',999,'fatal'],
 ];
 
 const KELAS_LIST = [
@@ -743,19 +749,19 @@ function onMpPelnBlur() {
 
 function renderMpPelnDD(q) {
   const dd = document.getElementById('mp-peln-dd');
-  const katIcon = {ringan:'🟡',sedang:'🟠',berat:'🔴'};
-  const katGroup = {ringan:[], sedang:[], berat:[]};
+  const katIcon = {ringan:'🟡',sedang:'🟠',berat:'🔴',fatal:'⛔'};
+  const katGroup = {ringan:[], sedang:[], berat:[], fatal:[]};
   PELN_LIST.forEach(([label,poin,kat]) => {
     if (!q || fuzzyMatch(label, q)) katGroup[kat].push([label,poin,kat]);
   });
   let html = '';
-  ['ringan','sedang','berat'].forEach(kat => {
+  ['ringan','sedang','berat','fatal'].forEach(kat => {
     if (!katGroup[kat].length) return;
     html += `<div style="padding:6px 14px 4px;font-size:10px;font-weight:800;color:var(--slate);text-transform:uppercase;letter-spacing:0.06em;border-top:1px solid var(--border);margin-top:2px">${katIcon[kat]} ${kat.toUpperCase()}</div>`;
     html += katGroup[kat].map(([label,poin,kat2]) =>
       `<div class="dd-item" onmousedown="pilihMpPeln('${label.replace(/'/g,"\'")}',${poin},'${kat2}')">
         <span>${highlight(label, q||'')}</span>
-        <span class="dd-kelas" style="font-weight:700;color:${poin>=30?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin} poin</span>
+        <span class="dd-kelas" style="font-weight:700;color:${poin>=999?'#7f1d1d':poin>=30?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin} poin</span>
       </div>`
     ).join('');
   });
@@ -767,7 +773,7 @@ function pilihMpPeln(label, poin, kat) {
   mpSelectedPeln = {label, poin, kat};
   document.getElementById('mp-peln-search').value = label;
   document.getElementById('mp-peln-dd').classList.remove('open');
-  const katIcon = {ringan:'🟡',sedang:'🟠',berat:'🔴'};
+  const katIcon = {ringan:'🟡',sedang:'🟠',berat:'🔴',fatal:'⛔'};
   const katColor = {ringan:'#92400e',sedang:'#c2410c',berat:'var(--merah)'};
   document.getElementById('mp-peln-selected').style.display = 'block';
   document.getElementById('mp-peln-label').innerHTML =
@@ -909,6 +915,11 @@ function doLogin() {
   document.getElementById('app').style.display='flex';
   initApp();
 }
+function doRefresh() {
+  if(!SESSION) return;
+  showLoading('Memuat ulang data...');
+  loadAll().then(() => { renderAll(); toast('Data berhasil diperbarui!','sukses'); }).catch(e=>{ toast('Gagal refresh: '+e.message,'error'); hideLoading(); });
+}
 function doLogout() {
   SESSION=null;
   document.getElementById('login-screen').style.display='flex';
@@ -1005,12 +1016,12 @@ function onPelnBlur() { pelnBlurTimer=setTimeout(()=>document.getElementById('pe
 function onPelnKeydown(e) { if(e.key==='Escape')document.getElementById('peln-dd').classList.remove('open'); }
 function renderPelnDD(q) {
   const dd=document.getElementById('peln-dd');
-  const katIcon={ringan:'🟡',sedang:'🟠',berat:'🔴'};
+  const katIcon={ringan:'🟡',sedang:'🟠',berat:'🔴',fatal:'⛔'};
   const selected=pelnList.map(p=>p.label);
   const source=PELN_LIST.filter(([label])=>!selected.includes(label));
   const filtered=q?source.filter(([label])=>fuzzyMatch(label,q)):source;
   dd.innerHTML=filtered.length
-    ?filtered.slice(0,20).map(([label,poin,kat])=>`<div class="dd-item" onmousedown="tambahPeln('${label.replace(/'/g,"\\'")}',${poin},'${kat}')"><span>${katIcon[kat]} ${highlight(label,q||'')}</span><span class="dd-kelas" style="font-weight:700;color:${poin>=30?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin} poin</span></div>`).join('')
+    ?filtered.slice(0,20).map(([label,poin,kat])=>`<div class="dd-item" onmousedown="tambahPeln('${label.replace(/'/g,"\\'")}',${poin},'${kat}')"><span>${katIcon[kat]} ${highlight(label,q||'')}</span><span class="dd-kelas" style="font-weight:700;color:${poin>=999?'#7f1d1d':poin>=30?'var(--merah)':poin>=10?'var(--orange)':'#92400e'}">${poin} poin</span></div>`).join('')
     :'<div class="dd-empty">Tidak ditemukan</div>';
   dd.classList.add('open');
 }
@@ -1025,7 +1036,7 @@ function hapusPelnItem(idx) { pelnList.splice(idx,1); renderPelnList(); }
 function renderPelnList() {
   const el=document.getElementById('peln-list');
   const wrap=document.getElementById('poin-total-wrap');
-  const katIcon={ringan:'🟡',sedang:'🟠',berat:'🔴'};
+  const katIcon={ringan:'🟡',sedang:'🟠',berat:'🔴',fatal:'⛔'};
   const katColor={ringan:'#92400e',sedang:'#c2410c',berat:'var(--merah)'};
   if(!pelnList.length){el.innerHTML='';wrap.style.display='none';return;}
   el.innerHTML=pelnList.map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--hijau-pale);border:1px solid var(--hijau-light);border-radius:8px;"><span style="flex:1;font-size:13px">${katIcon[p.kat]} ${p.label}</span><span style="font-weight:700;color:${katColor[p.kat]};font-size:13px;white-space:nowrap">${p.poin} poin</span><button onclick="hapusPelnItem(${i})" style="background:none;border:none;cursor:pointer;color:#f87171;font-size:16px;padding:0 4px;line-height:1">×</button></div>`).join('');
@@ -1244,32 +1255,34 @@ function switchTab(id,btn) {
   if(id==='rekap')renderAll();
 }
 function getTindakan(poin) {
-  // PROSES 1 — Wali Kelas
-  if(poin < 50)  return{cls:'t0',proses:'—',teks:'✅ Belum ada tindakan — Akumulasi poin masih rendah'};
-  if(poin < 75)  return{cls:'t1',proses:'Proses 1 · Panggilan I',teks:'👤 Wali Kelas: Murid dipanggil, teguran lisan, dicatat buku perkembangan. WA ortu sebagai pemberitahuan awal.'};
-  if(poin < 100) return{cls:'t1',proses:'Proses 1 · Panggilan II',teks:'✍️ Wali Kelas: Teguran tertulis + tanda tangan murid. WA ortu ingatkan akumulasi poin & jadwal pertemuan.'};
-  if(poin < 125) return{cls:'t1',proses:'Proses 1 · Panggilan III',teks:'🤝 Wali Kelas: Pertemuan F2F dengan orang tua, tanda tangan bersama form penanganan.'};
+  // FATAL
+  if(poin >= 999) return{cls:'t6',proses:'⛔ PELANGGARAN FATAL',teks:'⛔ Langsung dikembalikan kepada orang tua — Dikeluarkan dari sekolah tanpa akumulasi.'};
+  // PROSES 1 — Wali Kelas (threshold baru)
+  if(poin < 30)  return{cls:'t0',proses:'—',teks:'✅ Belum ada tindakan — Akumulasi poin masih rendah'};
+  if(poin < 50)  return{cls:'t1',proses:'Proses 1 · Panggilan I',teks:'👤 Wali Kelas: Murid dipanggil, teguran lisan, dicatat buku perkembangan. WA ortu sebagai pemberitahuan awal.'};
+  if(poin < 75)  return{cls:'t1',proses:'Proses 1 · Panggilan II',teks:'✍️ Wali Kelas: Teguran tertulis + tanda tangan murid. WA ortu ingatkan akumulasi poin & jadwal pertemuan.'};
+  if(poin < 100) return{cls:'t1',proses:'Proses 1 · Panggilan III',teks:'🤝 Wali Kelas: Pertemuan F2F dengan orang tua, tanda tangan bersama form penanganan.'};
   // PROSES 2 — Waka Kesiswaan
-  if(poin < 150) return{cls:'t2',proses:'Proses 2 · Panggilan I',teks:'👤 Kesiswaan: Murid dipanggil kesiswaan, pembinaan + dicatat.'};
-  if(poin < 175) return{cls:'t2',proses:'Proses 2 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan: Murid + orang tua dipanggil ke sekolah, diskusi kondisi murid bersama kesiswaan.'};
-  if(poin < 200) return{cls:'t2',proses:'Proses 2 · Panggilan III',teks:'📝 Kesiswaan: Surat pernyataan ditandatangani murid + orang tua.'};
+  if(poin < 130) return{cls:'t2',proses:'Proses 2 · Panggilan I',teks:'👤 Kesiswaan: Murid dipanggil kesiswaan, pembinaan + dicatat.'};
+  if(poin < 160) return{cls:'t2',proses:'Proses 2 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan: Murid + orang tua dipanggil ke sekolah, diskusi kondisi murid bersama kesiswaan.'};
+  if(poin < 190) return{cls:'t2',proses:'Proses 2 · Panggilan III',teks:'📝 Kesiswaan: Surat pernyataan ditandatangani murid + orang tua.'};
   // PROSES 3 — Kesiswaan + Konselor
-  if(poin < 225) return{cls:'t3',proses:'Proses 3 · Panggilan I',teks:'🧠 Kesiswaan + Konselor: Murid sesi konseling individual dengan konselor.'};
-  if(poin < 250) return{cls:'t3',proses:'Proses 3 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan + Konselor: Murid + orang tua + konselor, diskusi mendalam cari akar masalah.'};
-  if(poin < 300) return{cls:'t3',proses:'Proses 3 · Panggilan III — ⚠️ PERINGATAN I',teks:'🚨 Kesiswaan + Konselor: Surat Peringatan I resmi + rekomendasi konselor tertulis.'};
+  if(poin < 215) return{cls:'t3',proses:'Proses 3 · Panggilan I',teks:'🧠 Kesiswaan + Konselor: Murid sesi konseling individual dengan konselor.'};
+  if(poin < 240) return{cls:'t3',proses:'Proses 3 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan + Konselor: Murid + orang tua + konselor, diskusi mendalam cari akar masalah.'};
+  if(poin < 270) return{cls:'t3',proses:'Proses 3 · Panggilan III — ⚠️ PERINGATAN I',teks:'🚨 Kesiswaan + Konselor: Surat Peringatan I resmi + rekomendasi konselor tertulis.'};
   // PROSES 4 — Kepala Sekolah
-  if(poin < 325) return{cls:'t4',proses:'Proses 4 · Panggilan I',teks:'🏫 Kepala Sekolah: Murid + orang tua menghadap kepala sekolah, evaluasi serius.'};
-  if(poin < 350) return{cls:'t4',proses:'Proses 4 · Panggilan II — ⚠️ PERINGATAN II',teks:'📋 Kepala Sekolah: Surat Peringatan II + surat perjanjian bermaterai.'};
-  if(poin < 375) return{cls:'t4',proses:'Proses 4 · Panggilan III — 🔴 SKORSING',teks:'🔴 Kepala Sekolah: Skorsing sementara + ultimatum tertulis.'};
+  if(poin < 300) return{cls:'t4',proses:'Proses 4 · Panggilan I',teks:'🏫 Kepala Sekolah: Murid + orang tua menghadap kepala sekolah, evaluasi serius.'};
+  if(poin < 330) return{cls:'t4',proses:'Proses 4 · Panggilan II — ⚠️ PERINGATAN II',teks:'📋 Kepala Sekolah: Surat Peringatan II + surat perjanjian bermaterai.'};
+  if(poin < 360) return{cls:'t4',proses:'Proses 4 · Panggilan III — 🔴 SKORSING',teks:'🔴 Kepala Sekolah: Skorsing sementara + ultimatum tertulis.'};
   // PROSES 5 — Rapat Dewan Guru
-  if(poin < 400) return{cls:'t5',proses:'Proses 5 · Panggilan I',teks:'👩‍🏫 Rapat Dewan Guru: Rapat internal, orang tua diberitahu hasil rapat.'};
-  if(poin < 425) return{cls:'t5',proses:'Proses 5 · Panggilan II — ⚠️ PERINGATAN III',teks:'📢 Rapat Dewan Guru: Orang tua hadir di sekolah, Surat Peringatan III.'};
-  if(poin < 450) return{cls:'t5',proses:'Proses 5 · Panggilan III — 🔴 SKORSING PANJANG',teks:'🔴 Rapat Dewan Guru: Skorsing panjang, upaya pembinaan terakhir.'};
+  if(poin < 390) return{cls:'t5',proses:'Proses 5 · Panggilan I',teks:'👩‍🏫 Rapat Dewan Guru: Rapat internal, orang tua diberitahu hasil rapat.'};
+  if(poin < 415) return{cls:'t5',proses:'Proses 5 · Panggilan II — ⚠️ PERINGATAN III',teks:'📢 Rapat Dewan Guru: Orang tua hadir di sekolah, Surat Peringatan III.'};
+  if(poin < 440) return{cls:'t5',proses:'Proses 5 · Panggilan III — 🔴 SKORSING PANJANG',teks:'🔴 Rapat Dewan Guru: Skorsing panjang, upaya pembinaan terakhir.'};
   return{cls:'t6',proses:'⛔ PANGGILAN TERAKHIR',teks:'⛔ Rapat Dewan Guru: Dikembalikan kepada orang tua — Dikeluarkan dari sekolah.'};
 }
-function katLabel(k){return{ringan:'🟡 Ringan',sedang:'🟠 Sedang',berat:'🔴 Berat'}[k]||k;}
-function poinColor(kat){return{ringan:'#92400e',sedang:'#c2410c',berat:'var(--merah)'}[kat]||'inherit';}
-function poinColor2(p){return p>=71?'var(--merah)':p>=41?'var(--orange)':p>=21?'var(--kuning)':'var(--hijau)';}
+function katLabel(k){return{ringan:'🟡 Ringan',sedang:'🟠 Sedang',berat:'🔴 Berat',fatal:'⛔ Fatal'}[k]||k;}
+function poinColor(kat){return{ringan:'#92400e',sedang:'#c2410c',berat:'var(--merah)',fatal:'#7f1d1d'}[kat]||'inherit';}
+function poinColor2(p){return p>=999?'#7f1d1d':p>=71?'var(--merah)':p>=41?'var(--orange)':p>=21?'var(--kuning)':'var(--hijau)';}
 function avaColor(n){const c=['#15643b','#2563eb','#7c3aed','#db2777','#ea580c','#0891b2','#16a34a'];let h=0;for(let ch of n)h=(h*31+ch.charCodeAt(0))%c.length;return c[h];}
 function fmtDate(s){if(!s)return'—';return new Date(s+'T00:00:00').toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'});}
 function today(){return new Date().toISOString().split('T')[0];}
