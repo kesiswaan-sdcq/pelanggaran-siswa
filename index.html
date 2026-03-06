@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Pelanggaran Siswa - SD Islam Tahfizh Cahaya Qur'an</title>
+<title>Pelanggaran Murid - SD Islam Tahfizh Cahaya Qur'an</title>
 <style>
 :root {
   --hijau:       #15643b;
@@ -330,7 +330,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <div class="login-box">
     <div class="login-logo">
       <div class="icon"><img src="logo_sd.png" style="width:72px;height:72px;object-fit:contain"></div>
-      <h1>Pelanggaran Siswa</h1>
+      <h1>Pelanggaran Murid</h1>
       <p>SD Islam Tahfizh Cahaya Qur'an</p>
     </div>
     <div class="login-divider"><span>Masuk dengan akun sekolah</span></div>
@@ -359,7 +359,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
   <header>
     <div class="hdr-icon"><img src="logo_sd.png" style="width:32px;height:32px;object-fit:contain"></div>
     <div>
-      <div class="hdr-title">Pelanggaran Siswa</div>
+      <div class="hdr-title">Pelanggaran Murid</div>
       <div class="hdr-sub" id="hdr-sub">—</div>
     </div>
     <div class="hdr-role" id="hdr-role">—</div>
@@ -373,14 +373,14 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
 
       <!-- MODE TOGGLE -->
       <div style="display:flex;gap:8px;margin-bottom:14px">
-        <button class="mode-btn active" id="mode-btn-siswa" onclick="switchMode('siswa')">👤 Per Siswa</button>
+        <button class="mode-btn active" id="mode-btn-siswa" onclick="switchMode('siswa')">👤 Per Murid</button>
         <button class="mode-btn" id="mode-btn-pelanggaran" onclick="switchMode('pelanggaran')">📋 Per Pelanggaran</button>
       </div>
 
       <!-- MODE 1: PER SISWA -->
       <div id="mode-siswa">
         <div class="card">
-          <div class="card-head">✏️ Input Per Siswa</div>
+          <div class="card-head">✏️ Input Per Murid</div>
           <div class="form-grid">
             <div class="fg">
               <label>Kelas</label>
@@ -389,9 +389,9 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
               </select>
             </div>
             <div class="fg">
-              <label>Nama Siswa</label>
+              <label>Nama Murid</label>
               <div class="search-wrap">
-                <input class="search-input" id="inp-siswa" placeholder="Ketik nama siswa..." autocomplete="off"
+                <input class="search-input" id="inp-siswa" placeholder="Ketik nama murid..." autocomplete="off"
                   oninput="onSiswaInput()" onfocus="onSiswaFocus()" onblur="onSiswaBlur()" onkeydown="onSiswaKeydown(event)">
                 <div class="dropdown-list" id="siswa-dd"></div>
               </div>
@@ -457,7 +457,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
           </div>
           <div id="mp-siswa-wrap" style="display:none;margin-top:16px">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
-              <label style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.04em">Centang Siswa yang Melanggar</label>
+              <label style="font-size:11px;font-weight:700;color:var(--slate);text-transform:uppercase;letter-spacing:0.04em">Centang Murid yang Melanggar</label>
               <div style="display:flex;gap:8px">
                 <button class="btn-sec" onclick="mpSelectAll()" style="padding:5px 12px;font-size:12px">Pilih Semua</button>
                 <button class="btn-sec" onclick="mpClearAll()" style="padding:5px 12px;font-size:12px">Hapus Semua</button>
@@ -492,7 +492,7 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
       <div class="card">
         <div class="card-head">📋 Riwayat Pelanggaran</div>
         <div class="filter-bar">
-          <input type="text" id="f-nama" placeholder="🔍 Cari nama..." oninput="renderRiwayat()">
+          <input type="text" id="f-nama" placeholder="🔍 Cari nama murid..." oninput="renderRiwayat()">
           <select id="f-kat" onchange="renderRiwayat()">
             <option value="">Semua Kategori</option>
             <option value="ringan">🟡 Ringan</option>
@@ -508,9 +508,9 @@ tbody td { padding: 10px 14px; vertical-align: middle; }
         </div>
       </div>
       <div class="card">
-        <div class="card-head">👤 Rekap Per Siswa</div>
+        <div class="card-head">👤 Rekap Per Murid</div>
         <div class="filter-bar">
-          <input type="text" id="f-siswa-nama" placeholder="🔍 Cari siswa..." oninput="renderRekapSiswa()">
+          <input type="text" id="f-siswa-nama" placeholder="🔍 Cari murid..." oninput="renderRekapSiswa()">
           <select id="f-siswa-kelas" onchange="renderRekapSiswa()">
             <option value="">Semua Kelas</option>
           </select>
@@ -771,7 +771,7 @@ function pilihMpPeln(label, poin, kat) {
   const katColor = {ringan:'#92400e',sedang:'#c2410c',berat:'var(--merah)'};
   document.getElementById('mp-peln-selected').style.display = 'block';
   document.getElementById('mp-peln-label').innerHTML =
-    `${katIcon[kat]} <span style="color:var(--gelap)">${label}</span> &nbsp;·&nbsp; <span style="color:${katColor[kat]};font-family:'Courier New',monospace">${poin} poin per siswa</span>`;
+    `${katIcon[kat]} <span style="color:var(--gelap)">${label}</span> &nbsp;·&nbsp; <span style="color:${katColor[kat]};font-family:'Courier New',monospace">${poin} poin per murid</span>`;
   mpRenderSiswaList();
 }
 
@@ -837,7 +837,7 @@ function mpUpdateSummary() {
   if (checked.length && mpSelectedPeln) {
     summaryEl.style.display = 'flex';
     document.getElementById('mp-summary-text').textContent =
-      `${checked.length} siswa dipilih · Total: ${checked.length * mpSelectedPeln.poin} poin`;
+      `${checked.length} murid dipilih · Total: ${checked.length * mpSelectedPeln.poin} poin`;
   } else {
     summaryEl.style.display = 'none';
   }
@@ -852,7 +852,7 @@ async function simpanPerPelanggaran() {
   }
   const siswaList = getSiswaByKelas(kelas);
   const checked = siswaList.filter((_, i) => document.getElementById('mp-chk-'+i)?.checked);
-  if (!checked.length) { toast('Pilih minimal 1 siswa!', 'error'); return; }
+  if (!checked.length) { toast('Pilih minimal 1 murid!', 'error'); return; }
 
   const btn = document.getElementById('btn-simpan-mp');
   btn.disabled = true; btn.innerHTML = '<div class="spin"></div> Menyimpan...';
@@ -871,7 +871,7 @@ async function simpanPerPelanggaran() {
   try {
     for (const e of entries)
       await scriptPost('append', {sheet:SHEET_PELN, row:[e.id,e.tanggal,e.nama,e.kelas,e.pelanggaran,e.kategori,e.poin,e.guru,e.ket]});
-    toast(`✅ ${checked.length} siswa tersimpan! Total: ${checked.length * mpSelectedPeln.poin} poin`, 'sukses');
+    toast(`✅ ${checked.length} murid tersimpan! Total: ${checked.length * mpSelectedPeln.poin} poin`, 'sukses');
   } catch(e) {
     toast('⚠️ Tersimpan lokal (Sheets: '+e.message+')', 'error');
   }
@@ -925,7 +925,7 @@ function initApp() {
     ? [{id:'input',label:'✏️ Input'},{id:'rekap',label:'📊 Rekap Kelas'}]
     : SESSION.role==='kesiswaan'
     ? [{id:'rekap',label:'📊 Semua Data'},{id:'laporan',label:'📄 Laporan'},{id:'admin',label:'⚙️ Admin'}]
-    : [{id:'rekap',label:'📊 Data Siswa'},{id:'laporan',label:'📄 Laporan'}];
+    : [{id:'rekap',label:'📊 Data Murid'},{id:'laporan',label:'📄 Laporan'}];
   const nav = document.getElementById('nav-tabs');
   nav.innerHTML = tabs.map((t,i)=>`<button class="nav-tab ${i===0?'active':''}" onclick="switchTab('${t.id}',this)">${t.label}</button>`).join('');
   if (tabs.length) switchTab(tabs[0].id, nav.firstChild);
@@ -1073,7 +1073,7 @@ function renderStats() {
   data.forEach(d=>{const k=d.nama+'|'+d.kelas;map[k]=(map[k]||0)+d.poin;});
   const vals=Object.values(map);
   const el=document.getElementById('stats-rekap');if(!el)return;
-  el.innerHTML=`<div class="stat-card c-hijau"><div class="num">${vals.length}</div><div class="lbl">Siswa Tercatat</div></div><div class="stat-card"><div class="num">${data.length}</div><div class="lbl">Total Pelanggaran</div></div><div class="stat-card c-orange"><div class="num">${vals.filter(p=>p>=41&&p<=60).length}</div><div class="lbl">SP1 (41–60 poin)</div></div><div class="stat-card c-merah"><div class="num">${vals.filter(p=>p>60).length}</div><div class="lbl">SP2+ / Kritis</div></div>`;
+  el.innerHTML=`<div class="stat-card c-hijau"><div class="num">${vals.length}</div><div class="lbl">Murid Tercatat</div></div><div class="stat-card"><div class="num">${data.length}</div><div class="lbl">Total Pelanggaran</div></div><div class="stat-card c-orange"><div class="num">${vals.filter(p=>p>=125&&p<300).length}</div><div class="lbl">Proses 2–3 (125–299)</div></div><div class="stat-card c-merah"><div class="num">${vals.filter(p=>p>=300).length}</div><div class="lbl">Proses 4–5 / Kritis</div></div>`;
 }
 function renderRiwayat() {
   let data=getDataForRole();
@@ -1085,7 +1085,7 @@ function renderRiwayat() {
   const canDel=SESSION.role==='kesiswaan';
   document.getElementById('tbody-riwayat').innerHTML=data.length
     ?data.map((d,i)=>`<tr><td style="color:var(--slate);font-size:12px">${i+1}</td><td style="white-space:nowrap;font-size:12px">${fmtDate(d.tanggal)}</td><td><strong>${d.nama}</strong></td><td><span class="badge kelas">${d.kelas}</span></td><td style="max-width:200px;font-size:12.5px">${d.pelanggaran}</td><td><span class="badge ${d.kategori}">${katLabel(d.kategori)}</span></td><td style="font-weight:700;color:${poinColor(d.kategori)}">${d.poin}</td><td style="font-size:12px;color:var(--slate)">${d.guru||'—'}</td>${canDel?`<td><button class="btn-del" onclick="hapus('${d.id}')">🗑️</button></td>`:'<td></td>'}</tr>`).join('')
-    :'<tr><td colspan="9" class="td-empty">Belum ada data pelanggaran</td></tr>';
+    :'<tr><td colspan="9" class="td-empty">Belum ada data pelanggaran murid</td></tr>';
 }
 function renderRekapSiswa() {
   let data=getDataForRole();
@@ -1095,7 +1095,7 @@ function renderRekapSiswa() {
   data.forEach(d=>{const k=d.nama+'|'+d.kelas;if(!map[k])map[k]={nama:d.nama,kelas:d.kelas,poin:0,list:[]};map[k].poin+=d.poin;map[k].list.push(d);});
   let siswa=Object.values(map).filter(s=>(!q||s.nama.toLowerCase().includes(q))&&(!kelas||s.kelas===kelas)).sort((a,b)=>b.poin-a.poin);
   const el=document.getElementById('rekap-siswa');if(!el)return;
-  if(!siswa.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate);font-style:italic">Belum ada data siswa</div>';return;}
+  if(!siswa.length){el.innerHTML='<div style="text-align:center;padding:40px;color:var(--slate);font-style:italic">Belum ada data murid</div>';return;}
   el.innerHTML=siswa.map(s=>{
     const t=getTindakan(s.poin);
     return `<div class="siswa-card"><div class="siswa-head" onclick="toggleSiswa(this)"><div class="ava" style="background:${avaColor(s.nama)}">${s.nama[0].toUpperCase()}</div><div class="siswa-info"><div class="nama">${s.nama}</div><div class="meta">Kelas ${s.kelas} · ${s.list.length}× pelanggaran</div></div><div class="siswa-poin" style="color:${poinColor2(s.poin)}">${s.poin} <span style="font-size:12px;font-weight:500;color:var(--slate)">poin</span></div><div class="siswa-arrow">▼</div></div><div class="siswa-body"><div class="tindakan-bar ${t.cls}" style="flex-direction:column;align-items:flex-start;gap:4px">
@@ -1152,7 +1152,7 @@ function downloadExcelRekap() {
       ['Kelas', '', kelas],
       ['Nama Guru', '', wali ? wali.nama : ''],
       [],
-      ['No', 'Nama Siswa', 'Ringan', 'Sedang', 'Berat', 'Total Poin Pelanggaran', 'Catatan'],
+      ['No', 'Nama Murid', 'Ringan', 'Sedang', 'Berat', 'Total Poin Pelanggaran', 'Catatan'],
       ...allSiswa.map((nama, idx) => {
         const sd = kd.filter(d => d.nama === nama);
         return [
@@ -1200,18 +1200,18 @@ function generateLaporan() {
       <div style="border-bottom:2px solid var(--gelap);padding-bottom:16px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
         <img src="logo_sd.png" style="width:70px;height:70px;object-fit:contain;flex-shrink:0">
         <div style="flex:1;text-align:center">
-          <div style="font-size:11px;color:var(--slate);font-weight:700;margin-bottom:3px;letter-spacing:0.06em;text-transform:uppercase">Laporan Pelanggaran Siswa</div>
+          <div style="font-size:11px;color:var(--slate);font-weight:700;margin-bottom:3px;letter-spacing:0.06em;text-transform:uppercase">Laporan Pelanggaran Murid</div>
           <div style="font-size:17px;font-weight:800;color:var(--gelap)">SD Islam Tahfizh Cahaya Qur'an</div>
           <div style="font-size:12px;color:var(--slate);margin-top:4px">Periode: ${per} &nbsp;·&nbsp; Dicetak: ${tgl}</div>
         </div>
         <div style="width:70px;flex-shrink:0"></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px">
-        ${[['Siswa Tercatat',siswa.length,'var(--hijau)'],['Total Pelanggaran',data.length,'var(--gelap)'],['SP1 (41–60)',siswa.filter(s=>s.poin>=41&&s.poin<=60).length,'var(--orange)'],['SP2+ / DO',siswa.filter(s=>s.poin>60).length,'var(--merah)']].map(([l,v,c])=>`<div style="border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;color:${c};font-family:'Courier New',monospace">${v}</div><div style="font-size:11px;color:var(--slate);font-weight:600;margin-top:3px">${l}</div></div>`).join('')}
+        ${[['Murid Tercatat',siswa.length,'var(--hijau)'],['Total Pelanggaran',data.length,'var(--gelap)'],['Proses 2-3',siswa.filter(s=>s.poin>=125&&s.poin<300).length,'var(--orange)'],['Proses 4-5 / Kritis',siswa.filter(s=>s.poin>=300).length,'var(--merah)']].map(([l,v,c])=>`<div style="border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center"><div style="font-size:24px;font-weight:800;color:${c};font-family:'Courier New',monospace">${v}</div><div style="font-size:11px;color:var(--slate);font-weight:600;margin-top:3px">${l}</div></div>`).join('')}
       </div>
       <table style="width:100%;border-collapse:collapse;font-size:13px">
         <thead><tr style="background:var(--hijau);color:white">
-          <th style="padding:10px 12px">No</th><th style="padding:10px 12px">Nama Siswa</th><th style="padding:10px 12px">Kelas</th><th style="padding:10px 12px;text-align:center">Jml</th><th style="padding:10px 12px;text-align:center">Total Poin</th><th style="padding:10px 12px">Status</th>
+          <th style="padding:10px 12px">No</th><th style="padding:10px 12px">Nama Murid</th><th style="padding:10px 12px">Kelas</th><th style="padding:10px 12px;text-align:center">Jml</th><th style="padding:10px 12px;text-align:center">Total Poin</th><th style="padding:10px 12px">Status</th>
         </tr></thead>
         <tbody>${siswa.length?siswa.map((s,i)=>{const t=getTindakan(s.poin);return`<tr style="border-bottom:1px solid var(--border)"><td style="padding:9px 12px;color:var(--slate)">${i+1}</td><td style="padding:9px 12px;font-weight:700">${s.nama}</td><td style="padding:9px 12px">${s.kelas}</td><td style="padding:9px 12px;text-align:center">${s.cnt}×</td><td style="padding:9px 12px;text-align:center;font-weight:800;color:${poinColor2(s.poin)};font-size:15px">${s.poin}</td><td style="padding:9px 12px;font-size:12px">${(t.proses ? `<div style="font-size:10px;font-weight:700;opacity:0.7;margin-bottom:2px">${t.proses}</div>` : '') + t.teks.replace(/^\S+ /,'')}</td></tr>`;}).join(''):'<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--slate);font-style:italic">Tidak ada data pada periode ini</td></tr>'}</tbody>
       </table>
@@ -1246,19 +1246,19 @@ function switchTab(id,btn) {
 function getTindakan(poin) {
   // PROSES 1 — Wali Kelas
   if(poin < 50)  return{cls:'t0',proses:'—',teks:'✅ Belum ada tindakan — Akumulasi poin masih rendah'};
-  if(poin < 75)  return{cls:'t1',proses:'Proses 1 · Panggilan I',teks:'👤 Wali Kelas: Siswa dipanggil, teguran lisan, dicatat buku perkembangan. WA ortu sebagai pemberitahuan awal.'};
-  if(poin < 100) return{cls:'t1',proses:'Proses 1 · Panggilan II',teks:'✍️ Wali Kelas: Teguran tertulis + tanda tangan siswa. WA ortu ingatkan akumulasi poin & jadwal pertemuan.'};
+  if(poin < 75)  return{cls:'t1',proses:'Proses 1 · Panggilan I',teks:'👤 Wali Kelas: Murid dipanggil, teguran lisan, dicatat buku perkembangan. WA ortu sebagai pemberitahuan awal.'};
+  if(poin < 100) return{cls:'t1',proses:'Proses 1 · Panggilan II',teks:'✍️ Wali Kelas: Teguran tertulis + tanda tangan murid. WA ortu ingatkan akumulasi poin & jadwal pertemuan.'};
   if(poin < 125) return{cls:'t1',proses:'Proses 1 · Panggilan III',teks:'🤝 Wali Kelas: Pertemuan F2F dengan orang tua, tanda tangan bersama form penanganan.'};
   // PROSES 2 — Waka Kesiswaan
-  if(poin < 150) return{cls:'t2',proses:'Proses 2 · Panggilan I',teks:'👤 Kesiswaan: Siswa dipanggil kesiswaan, pembinaan + dicatat.'};
-  if(poin < 175) return{cls:'t2',proses:'Proses 2 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan: Siswa + orang tua dipanggil ke sekolah, diskusi kondisi siswa bersama kesiswaan.'};
-  if(poin < 200) return{cls:'t2',proses:'Proses 2 · Panggilan III',teks:'📝 Kesiswaan: Surat pernyataan ditandatangani siswa + orang tua.'};
+  if(poin < 150) return{cls:'t2',proses:'Proses 2 · Panggilan I',teks:'👤 Kesiswaan: Murid dipanggil kesiswaan, pembinaan + dicatat.'};
+  if(poin < 175) return{cls:'t2',proses:'Proses 2 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan: Murid + orang tua dipanggil ke sekolah, diskusi kondisi murid bersama kesiswaan.'};
+  if(poin < 200) return{cls:'t2',proses:'Proses 2 · Panggilan III',teks:'📝 Kesiswaan: Surat pernyataan ditandatangani murid + orang tua.'};
   // PROSES 3 — Kesiswaan + Konselor
-  if(poin < 225) return{cls:'t3',proses:'Proses 3 · Panggilan I',teks:'🧠 Kesiswaan + Konselor: Siswa sesi konseling individual dengan konselor.'};
-  if(poin < 250) return{cls:'t3',proses:'Proses 3 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan + Konselor: Siswa + orang tua + konselor, diskusi mendalam cari akar masalah.'};
+  if(poin < 225) return{cls:'t3',proses:'Proses 3 · Panggilan I',teks:'🧠 Kesiswaan + Konselor: Murid sesi konseling individual dengan konselor.'};
+  if(poin < 250) return{cls:'t3',proses:'Proses 3 · Panggilan II',teks:'👨‍👩‍👦 Kesiswaan + Konselor: Murid + orang tua + konselor, diskusi mendalam cari akar masalah.'};
   if(poin < 300) return{cls:'t3',proses:'Proses 3 · Panggilan III — ⚠️ PERINGATAN I',teks:'🚨 Kesiswaan + Konselor: Surat Peringatan I resmi + rekomendasi konselor tertulis.'};
   // PROSES 4 — Kepala Sekolah
-  if(poin < 325) return{cls:'t4',proses:'Proses 4 · Panggilan I',teks:'🏫 Kepala Sekolah: Siswa + orang tua menghadap kepala sekolah, evaluasi serius.'};
+  if(poin < 325) return{cls:'t4',proses:'Proses 4 · Panggilan I',teks:'🏫 Kepala Sekolah: Murid + orang tua menghadap kepala sekolah, evaluasi serius.'};
   if(poin < 350) return{cls:'t4',proses:'Proses 4 · Panggilan II — ⚠️ PERINGATAN II',teks:'📋 Kepala Sekolah: Surat Peringatan II + surat perjanjian bermaterai.'};
   if(poin < 375) return{cls:'t4',proses:'Proses 4 · Panggilan III — 🔴 SKORSING',teks:'🔴 Kepala Sekolah: Skorsing sementara + ultimatum tertulis.'};
   // PROSES 5 — Rapat Dewan Guru
